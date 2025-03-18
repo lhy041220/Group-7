@@ -2,7 +2,7 @@
 
 ## Table of Contents 
 
--[Project Description](#project-description)
+- [Project Description](#project-description)
 - [Player Rules](#player-rules)
 
 ## Project Description
