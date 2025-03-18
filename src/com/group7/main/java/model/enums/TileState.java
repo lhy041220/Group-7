@@ -1,4 +1,4 @@
-package com.group7.model.enums;
+package model.enums;
 
 public enum TileState {
     NORMAL,     // 正常状态

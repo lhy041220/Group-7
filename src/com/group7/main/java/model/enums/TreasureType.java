@@ -1,4 +1,4 @@
-package com.group7.model.enums;
+package model.enums;
 
 public enum TreasureType {
     EARTH("地之石"),

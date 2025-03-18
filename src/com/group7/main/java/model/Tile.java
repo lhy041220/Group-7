@@ -1,8 +1,8 @@
-package com.group7.model;
+package model;
 
-import com.group7.model.enums.TileState;
-import com.group7.model.enums.TileType;
-import com.group7.model.enums.TreasureType;
+import model.enums.TileState;
+import model.enums.TileType;
+import model.enums.TreasureType;
 
 public class Tile {
     private TileType type;

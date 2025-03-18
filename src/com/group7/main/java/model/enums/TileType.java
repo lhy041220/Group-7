@@ -1,4 +1,4 @@
-package com.group7.model.enums;
+package model.enums;
 
 public enum TileType {
     FOOLS_LANDING("愚者着陆点"),
