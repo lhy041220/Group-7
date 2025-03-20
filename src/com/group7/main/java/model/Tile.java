@@ -1,9 +1,18 @@
 package model;
 
+import lombok.Getter;
+
+import lombok.NoArgsConstructor;
 import model.enums.TileState;
 import model.enums.TileType;
 import model.enums.TreasureType;
 
+/***
+ * 表示岛屿上的每个格子
+ * 包含类型、状态(正常/已淹没/完全沉没)、位置和宝藏信息
+ * 提供淹没(flood)和排水(shore_up)方法
+ */
+@Getter
 public class Tile {
     private TileType type;
     private TileState state;
@@ -11,7 +20,7 @@ public class Tile {
     private int col;
     private TreasureType treasure;
 
-    public Tile(TileType type, int row, int col, TreasureType treasure) {
+    private Tile(TileType type, int row, int col, TreasureType treasure) {
         this.type = type;
         this.state = TileState.NORMAL;
         this.row = row;
@@ -19,33 +28,42 @@ public class Tile {
         this.treasure = treasure;
     }
 
-    public Tile(TileType type, int row, int col) {
-        this(type, row, col, TreasureType.NONE);
+    public static Tile createTileForType(TileType type, int row, int col, TreasureType treasure) {
+        return new Tile(type, row, col, treasure);
+    }
+
+    public static Tile createTileForType(TileType type, int row, int col) {
+        return new Tile(type, row, col, TreasureType.NONE);
     }
 
     /**
-     * 淹没格子，返回是否导致格子沉没
+     * 淹没格子
      */
-    public boolean flood() {
-        if (state == TileState.NORMAL) {
-            state = TileState.FLOODED;
-            return false;
-        } else if (state == TileState.FLOODED) {
-            state = TileState.SUNK;
-            return true;
-        }
-        return false;
+    public void flood() {
+        state = TileState.FLOODED;
     }
 
     /**
-     * 排水，返回操作是否成功
+     * 沉没格子
      */
-    public boolean shoreUp() {
-        if (state == TileState.FLOODED) {
-            state = TileState.NORMAL;
-            return true;
-        }
-        return false;
+    public void sink() {
+        state = TileState.SUNK;
+    }
+
+    /**
+     * 使格子排水
+     */
+    public void shoreUp() {
+        state = TileState.NORMAL;
+    }
+
+
+    public boolean isFlooded() {
+        return state == TileState.FLOODED;
+    }
+
+    public boolean isSunk() {
+        return state == TileState.SUNK;
     }
 
     /**
@@ -58,26 +76,5 @@ public class Tile {
     @Override
     public String toString() {
         return type.getDisplayName() + "(" + state + ")";
-    }
-
-    // Getters and setters
-    public TileType getType() {
-        return type;
-    }
-
-    public TileState getState() {
-        return state;
-    }
-
-    public int getRow() {
-        return row;
-    }
-
-    public int getCol() {
-        return col;
-    }
-
-    public TreasureType getTreasure() {
-        return treasure;
     }
 }
