@@ -7,11 +7,9 @@ import org.junit.jupiter.api.Test;
 
 public class gameTest {
     private static Game game;
-    private static WaterLevel waterLevel;
-
-    @BeforeAll
-    public static void testGame() {
-        game = new Game();
-        waterLevel = new WaterLevel();
+    @Test
+    public void testGame() {
+        // Assume there will be 4 players
+        Game game = new Game(4);
     }
 }
