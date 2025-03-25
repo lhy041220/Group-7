@@ -1,22 +1,65 @@
 package model;
 
-import model.card.SpecialCard;
-import model.card.TreasureCard;
+import lombok.Getter;
+import model.card.*;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 public class Player {
-    private String name;
-    private Tile currentTile;
-    private List<TreasureCard> treasureCards;
-    private List<SpecialCard> specialCards;
 
-    public Player(String name, Tile startingTile) {
-        this.name = name;
+    private int playerId;
+    private Tile currentTile;
+
+    private int actionsPerTurn = 3; // 每回合可执行的行动数
+    private int remainingActions;   // 当前回合剩余的行动数
+    private List<Card> hand;
+    private final int MAX_HAND_SIZE = 5;
+
+
+    public Player(int playerId, Tile startingTile) {
+        this.playerId = playerId;
         this.currentTile = startingTile;
-        this.treasureCards = new ArrayList<>();
-        this.specialCards = new ArrayList<>();
+        this.hand = new ArrayList<>();
+    }
+
+    /**
+     * 重置玩家的行动点数
+     */
+    public void resetActionsForTurn() {
+        this.remainingActions = actionsPerTurn;
+    }
+
+    /**
+     * 使用一个行动点数
+     */
+    public void useAction() {
+        if (remainingActions > 0) {
+            remainingActions--;
+        }
+    }
+
+    /**
+     * 添加卡牌到手中
+     */
+    public void addCardToHand(Card card) {
+        hand.add(card);
+    }
+
+    /**
+     * 检查手牌是否超出上限
+     */
+    public boolean handExceedsLimit() {
+        return hand.size() > MAX_HAND_SIZE;
+    }
+
+    /**
+     * 丢弃卡牌
+     */
+    public void discardCard(Card card) {
+        hand.remove(card);
     }
 
     public void moveToTile(Tile destinationTile) {
@@ -32,36 +75,11 @@ public class Player {
         return true; // 临时返回值，需要实现实际逻辑
     }
 
-    public void addCard(TreasureCard card) {
-        treasureCards.add(card);
-    }
-
-    public void addCard(SpecialCard card) {
-        specialCards.add(card);
-    }
-
     public void useSpecialCard(SpecialCard card) {
         // 实现使用特殊卡牌的逻辑
-        if (specialCards.contains(card)) {
+        if (hand.contains(card)) {
             card.useCard(this);
-            specialCards.remove(card);
+            hand.remove(card);
         }
-    }
-
-    // Getter和Setter方法
-    public String getName() {
-        return name;
-    }
-
-    public Tile getCurrentTile() {
-        return currentTile;
-    }
-
-    public List<TreasureCard> getTreasureCards() {
-        return treasureCards;
-    }
-
-    public List<SpecialCard> getSpecialCards() {
-        return specialCards;
     }
 }

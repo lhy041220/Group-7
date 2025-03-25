@@ -1,14 +1,11 @@
 package model.card;
 
-
 import model.Player;
+import model.enums.CardType;
 
-/***
- * 特殊卡牌
- */
-public abstract class SpecialCard extends Card {
+public abstract class SpecialCard extends HandCard {
     public SpecialCard(String name, String description) {
-        super(name, description);
+        super(name, description, CardType.SPECIAL);
     }
 
     public abstract void useCard(Player player);
