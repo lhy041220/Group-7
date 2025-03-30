@@ -2,7 +2,7 @@ package model;
 
 import lombok.Setter;
 import model.card.*;
-import model.card.HandCard;
+import model.enums.*;
 
 import lombok.Getter;
 import model.enums.GameState;
@@ -27,21 +27,18 @@ public class Game {
     @Setter
     private GameState gameState;
 
-    public Game(int numPlayers) {
-        this.board = new Board();
-        this.waterLevel = new WaterLevel();
-        this.players = new ArrayList<>();
-        this.treasureDeck = new Deck<>();
-        this.floodDeck = new Deck<>();
-        this.currentPlayerIndex = 0;
-        this.gameOver = false;
-        this.turnManager = new TurnManager(this, players);
+    public Game() {
+        board = new Board();
+        waterLevel = new WaterLevel();
+        players = new ArrayList<>();
+        treasureDeck = new Deck<>();
+        floodDeck = new Deck<>();
+        currentPlayerIndex = 0;
+        gameOver = false;
+        turnManager = new TurnManager(this, players);
 
         // 初始化牌库
         initializeDecks();
-
-        // 初始化玩家位置
-        initializePlayers(numPlayers);
     }
 
     private void initializeDecks() {
@@ -54,8 +51,22 @@ public class Game {
         // 创建玩家并安置到起始瓦片
     }
 
-    public void startGame() {
+    public void startGame(int numPlayers) {
+        // 初始化玩家位置
+        if (1 < numPlayers && numPlayers < 5) {
+            initializePlayers(numPlayers);
+        } else {
+            throw new IllegalArgumentException("Invalid number of players. Must be between 1 and 4.");
+        }
+
         gameState = GameState.RUNNING;
+
+        // 初始化玩家list
+        for (int i = 0; i < numPlayers; i++) {
+            Player player = new Player(i + 1, board.getTileByType(TileType.HOWLING_GARDEN));
+            players.add(player);
+        }
+
         // 洗牌
         treasureDeck.shuffle();
         floodDeck.shuffle();

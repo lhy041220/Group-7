@@ -3,23 +3,41 @@ package controller;
 import lombok.Getter;
 import model.*;
 import model.card.*;
+import view.MainFrame;
+
+import javax.swing.*;
 
 public class GameController {
     @Getter
     private Game game;
+    private MainFrame mainFrame;
 
-    public GameController() {
+    public GameController(Game game, MainFrame mainFrame) {
         // 默认构造函数
+        this.game = game;
+        this.mainFrame = mainFrame;
     }
 
-    public void initializeGame(int numPlayers) {
-        game = new Game(numPlayers);
+    public void initializeViewFrame() {
+        if (mainFrame != null) {
+            SwingUtilities.invokeLater(() -> {
+                mainFrame.setVisible(true);
+            });
+        }
     }
 
     public void startGame() {
         if (game != null) {
-            game.startGame();
+            game.startGame(getPlayerNum());
         }
+    }
+
+    private int getPlayerNum() {
+        // TODO: 从mainFame中获取玩家数量
+        if (mainFrame != null) {
+
+        }
+        return 3;
     }
 
     public void handlePlayerMove(Player player, Tile destination) {
