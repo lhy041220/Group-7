@@ -10,6 +10,7 @@ public class gameTest {
     @Test
     public void testGame() {
         // Assume there will be 4 players
-        Game game = new Game(4);
+        Game game = new Game();
+        game.startGame(4);
     }
 }
