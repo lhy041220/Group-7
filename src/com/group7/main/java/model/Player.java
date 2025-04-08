@@ -2,7 +2,7 @@ package model;
 
 import lombok.Getter;
 import model.card.*;
-
+import model.enums.Role; 
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +17,7 @@ public class Player {
     private int remainingActions;   // 当前回合剩余的行动数
     private List<Card> hand;
     private final int MAX_HAND_SIZE = 5;
+    private Role role; // 新增角色字段  
 
 
     public Player(int playerId, Tile startingTile) {
@@ -82,4 +83,11 @@ public class Player {
             hand.remove(card);
         }
     }
+     
+    public void useSpecialAbility(Tile destinationTile) {  
+        // 执行当前角色的特殊能力 (新)
+        this.role.useSpecialAbility(this, destinationTile); // 调用角色的特殊能力  
+        useAction(); // 使用一次行动点  
+    }  
+}  
 }
