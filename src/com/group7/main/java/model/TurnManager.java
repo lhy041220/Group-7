@@ -178,4 +178,5 @@ public class TurnManager {
         currentPhase = TurnPhase.END;
         endTurn();
     }
+
 }

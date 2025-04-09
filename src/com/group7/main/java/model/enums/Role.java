@@ -8,8 +8,8 @@ public enum Role {
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {  
             // Pilot 特殊能力：飞行到任意板块  
-            player.setCurrentTile(destinationTile);  
-            System.out.println("Pilot has flown to " + destinationTile.getName());  
+            // player.setCurrentTile(destinationTile);
+            // System.out.println("Pilot has flown to " + destinationTile.getName());
         }  
     },  
     ENGINEER {  
@@ -32,8 +32,8 @@ public enum Role {
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {  
             // Diver 特殊能力：穿越多个空板块到达目的地  
-            player.setCurrentTile(destinationTile);  
-            System.out.println("Diver has dived to " + destinationTile.getName());  
+            // player.setCurrentTile(destinationTile);
+            // System.out.println("Diver has dived to " + destinationTile.getName());
         }  
     },  
     MESSENGER {  
