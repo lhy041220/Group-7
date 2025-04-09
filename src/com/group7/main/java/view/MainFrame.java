@@ -7,6 +7,10 @@ import java.awt.*;
 
 public class MainFrame extends JFrame {
 
+    public static MainFrame instance;
+    public static MainFrame getInstance() {
+        return instance == null ? instance = new MainFrame() : instance;
+    }
     private GameBoardPanel gameBoardPanel;
     private PlayerInfoPanel playerInfoPanel;
     private CardPanel cardPanel;
@@ -14,7 +18,9 @@ public class MainFrame extends JFrame {
     private WaterLevelPanel waterLevelPanel;
     private ConsolePanel consolePanel;
 
-    public MainFrame() {
+
+
+    private MainFrame() {
         setTitle("Forbidden Island");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1500, 700);
@@ -28,12 +34,16 @@ public class MainFrame extends JFrame {
      * 初始化所有面板组件
      */
     private void initComponents() {
-        gameBoardPanel = new GameBoardPanel(new Board());
+        gameBoardPanel = new GameBoardPanel();
         playerInfoPanel = new PlayerInfoPanel();
         cardPanel = new CardPanel();
         controlPanel = new ControlPanel();
         waterLevelPanel = new WaterLevelPanel();
         consolePanel = new ConsolePanel();
+    }
+
+    public void updateBoard(Board board) {
+        gameBoardPanel.updateBoard(board);
     }
 
     /**

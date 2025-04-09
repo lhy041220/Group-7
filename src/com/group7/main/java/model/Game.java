@@ -13,6 +13,11 @@ import java.util.ArrayList;
 @Getter
 public class Game {
 
+    private static Game instance;
+    public static Game getInstance() {
+        return instance == null ? new Game() : instance;
+    }
+
     private Board board;
     private WaterLevel waterLevel;
     private List<Player> players;
@@ -27,7 +32,7 @@ public class Game {
     @Setter
     private GameState gameState;
 
-    public Game() {
+    private Game() {
         board = new Board();
         waterLevel = new WaterLevel();
         players = new ArrayList<>();

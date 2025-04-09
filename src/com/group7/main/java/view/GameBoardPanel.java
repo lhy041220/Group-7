@@ -10,7 +10,6 @@ import java.awt.*;
 
 public class GameBoardPanel extends JPanel {
 
-    private Board board;
     private JPanel[][] tilePanels;
     private final int TILE_SIZE = 70;
     private final int GRID_SIZE = 6;
@@ -24,8 +23,7 @@ public class GameBoardPanel extends JPanel {
 
     private final int HORIZONTAL_MARGIN = 150; // 添加水平边距使版图居中
 
-    public GameBoardPanel(Board board) {
-        this.board = board;
+    public GameBoardPanel() {
         this.tilePanels = new JPanel[GRID_SIZE][GRID_SIZE];
 
         setLayout(null); // 使用绝对布局
@@ -35,7 +33,6 @@ public class GameBoardPanel extends JPanel {
         setBackground(new Color(0, 50, 100)); // 深蓝色背景代表海洋
 
         initializeTilePanels();
-        updateBoard();
     }
 
 
@@ -63,7 +60,7 @@ public class GameBoardPanel extends JPanel {
     /**
      * 根据Board对象更新游戏板显示
      */
-    public void updateBoard() {
+    public void updateBoard(Board board) {
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
                 try {
@@ -141,12 +138,4 @@ public class GameBoardPanel extends JPanel {
         }
         return null;
     }
-
-    /**
-     * 手动刷新游戏板
-     */
-    public void refresh() {
-        updateBoard();
-    }
-
 }

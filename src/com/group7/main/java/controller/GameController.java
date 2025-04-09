@@ -27,8 +27,9 @@ public class GameController {
     }
 
     public void startGame() {
-        if (game != null) {
+        if (game != null && mainFrame != null) {
             game.startGame(getPlayerNum());
+            mainFrame.updateBoard(game.getBoard());
         }
     }
 
