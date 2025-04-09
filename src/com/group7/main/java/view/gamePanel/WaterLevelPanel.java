@@ -1,9 +1,4 @@
-package view;
-
-import model.WaterLevel;
-
-import javax.swing.*;
-import java.awt.*;
+package view.gamePanel;
 
 import javax.swing.*;
 import java.awt.*;

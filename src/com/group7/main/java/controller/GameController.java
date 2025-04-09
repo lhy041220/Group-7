@@ -3,7 +3,7 @@ package controller;
 import lombok.Getter;
 import model.*;
 import model.card.*;
-import view.MainFrame;
+import view.gamePanel.MainFrame;
 
 import javax.swing.*;
 

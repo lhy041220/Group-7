@@ -1,4 +1,4 @@
-package view;
+package view.gamePanel;
 
 import model.Tile;
 import model.Board;

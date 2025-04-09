@@ -1,9 +1,13 @@
-package view;
+package view.gamePanel;
 
+import lombok.Getter;
 import model.Board;
+import util.Event;
 
 import javax.swing.*;
 import java.awt.*;
+
+
 
 public class MainFrame extends JFrame {
 
@@ -11,6 +15,13 @@ public class MainFrame extends JFrame {
     public static MainFrame getInstance() {
         return instance == null ? instance = new MainFrame() : instance;
     }
+
+    public final Event onMoveButtonClick;
+    public final Event onShoreUpButtonClick;
+    public final Event onGiveCardButtonClick;
+    public final Event onCaptureTreasureButtonClick;
+    public final Event onEndTurnButtonClick;
+
     private GameBoardPanel gameBoardPanel;
     private PlayerInfoPanel playerInfoPanel;
     private CardPanel cardPanel;
@@ -26,8 +37,15 @@ public class MainFrame extends JFrame {
         setSize(1500, 700);
         setLayout(new BorderLayout());
 
+        onMoveButtonClick = new Event();
+        onShoreUpButtonClick = new Event();
+        onGiveCardButtonClick = new Event();
+        onCaptureTreasureButtonClick = new Event();
+        onEndTurnButtonClick = new Event();
+
         initComponents();
         addComponents();
+        addAllListeners();
     }
 
     /**
@@ -39,11 +57,7 @@ public class MainFrame extends JFrame {
         cardPanel = new CardPanel();
         controlPanel = new ControlPanel();
         waterLevelPanel = new WaterLevelPanel();
-        consolePanel = new ConsolePanel();
-    }
-
-    public void updateBoard(Board board) {
-        gameBoardPanel.updateBoard(board);
+        consolePanel = new ConsolePanel(this);
     }
 
     /**
@@ -67,6 +81,18 @@ public class MainFrame extends JFrame {
         add(controlPanel, BorderLayout.NORTH);
     }
 
+    private void addAllListeners() {
+        controlPanel.getMoveButton().addActionListener(e -> onMoveButtonClick.invoke(this, null));
+        controlPanel.getShoreUpButton().addActionListener(e -> onShoreUpButtonClick.invoke(this, null));
+        controlPanel.getGiveCardButton().addActionListener(e -> onGiveCardButtonClick.invoke(this, null));
+        controlPanel.getCaptureTreasureButton().addActionListener(e -> onCaptureTreasureButtonClick.invoke(this, null));
+        controlPanel.getEndTurnButton().addActionListener(e -> onEndTurnButtonClick.invoke(this, null));
+    }
+
+    public void updateBoard(Board board) {
+        gameBoardPanel.updateBoard(board);
+    }
+
     public void updateWaterLevel(int level) {
         waterLevelPanel.setWaterLevel(level);
     }
@@ -75,10 +101,4 @@ public class MainFrame extends JFrame {
         consolePanel.addMessage(message);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            MainFrame frame = new MainFrame();
-            frame.setVisible(true);
-        });
-    }
 }

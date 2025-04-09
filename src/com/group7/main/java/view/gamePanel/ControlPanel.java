@@ -1,8 +1,14 @@
-package view;
+package view.gamePanel;
+
+import lombok.Getter;
 
 import javax.swing.*;
 import java.awt.*;
 
+/***
+ * 玩家行动面板
+ */
+@Getter
 public class ControlPanel extends JPanel {
 
     private JButton moveButton;
