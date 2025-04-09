@@ -124,7 +124,7 @@ Take 1 action to fly to any plate. This ability can only be used once per turn.
 Spend 1 action to move another teammate up to 2 moves.
 ### Engineer
 Spend 1 action to remove up to 2 plates of stagnant water.
-### diver
+### Diver
 Action 1 traverses 1 or more continuously flooded plates.
 ### Explorer
 Can move diagonally or remove water.
