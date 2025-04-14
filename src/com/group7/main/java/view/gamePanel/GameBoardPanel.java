@@ -1,16 +1,17 @@
-package view;
+package view.gamePanel;
 
+import lombok.Setter;
 import model.Tile;
 import model.Board;
 import model.enums.TreasureType;
 
 import javax.swing.*;
 import java.awt.*;
-
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class GameBoardPanel extends JPanel {
 
-    private Board board;
     private JPanel[][] tilePanels;
     private final int TILE_SIZE = 70;
     private final int GRID_SIZE = 6;
@@ -24,8 +25,16 @@ public class GameBoardPanel extends JPanel {
 
     private final int HORIZONTAL_MARGIN = 150; // 添加水平边距使版图居中
 
-    public GameBoardPanel(Board board) {
-        this.board = board;
+    @Setter
+    private TileClickListener tileClickListener;
+    public interface TileClickListener {
+        void onTileClicked(int row, int col);
+    }
+
+
+
+
+    public GameBoardPanel() {
         this.tilePanels = new JPanel[GRID_SIZE][GRID_SIZE];
 
         setLayout(null); // 使用绝对布局
@@ -35,7 +44,6 @@ public class GameBoardPanel extends JPanel {
         setBackground(new Color(0, 50, 100)); // 深蓝色背景代表海洋
 
         initializeTilePanels();
-        updateBoard();
     }
 
 
@@ -45,14 +53,24 @@ public class GameBoardPanel extends JPanel {
     private void initializeTilePanels() {
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
-                // 添加水平偏移量使版图居中
-                final int x = HORIZONTAL_MARGIN + GAP + col * (TILE_SIZE + GAP);
-                final int y = GAP + row * (TILE_SIZE + GAP);
+                int x = HORIZONTAL_MARGIN + GAP + col * (TILE_SIZE + GAP);
+                int y = GAP + row * (TILE_SIZE + GAP);
 
                 JPanel tilePanel = new JPanel();
                 tilePanel.setLayout(new BorderLayout());
                 tilePanel.setBounds(x, y, TILE_SIZE, TILE_SIZE);
                 tilePanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
+
+                final int finalRow = row;
+                final int finalCol = col;
+                tilePanel.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (tileClickListener != null) {
+                            tileClickListener.onTileClicked(finalRow, finalCol);
+                        }
+                    }
+                });
 
                 tilePanels[row][col] = tilePanel;
                 add(tilePanel);
@@ -63,7 +81,7 @@ public class GameBoardPanel extends JPanel {
     /**
      * 根据Board对象更新游戏板显示
      */
-    public void updateBoard() {
+    public void updateBoard(Board board) {
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
                 try {
@@ -141,12 +159,4 @@ public class GameBoardPanel extends JPanel {
         }
         return null;
     }
-
-    /**
-     * 手动刷新游戏板
-     */
-    public void refresh() {
-        updateBoard();
-    }
-
 }

@@ -3,7 +3,7 @@ package controller;
 import lombok.Getter;
 import model.*;
 import model.card.*;
-import view.MainFrame;
+import view.gamePanel.MainFrame;
 
 import javax.swing.*;
 
@@ -27,8 +27,9 @@ public class GameController {
     }
 
     public void startGame() {
-        if (game != null) {
+        if (game != null && mainFrame != null) {
             game.startGame(getPlayerNum());
+            mainFrame.updateBoard(game.getBoard());
         }
     }
 
