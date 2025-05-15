@@ -474,6 +474,33 @@ public class Player {
         if (from == null || to == null) return -1;
         return Math.abs(from.getRow() - to.getRow()) + Math.abs(from.getCol() - to.getCol());
     }
+
+    public boolean rescuePlayer(Player sinkingPlayer) {
+        // 检查是否在同一板块
+        if (!isSameTile(currentTile, sinkingPlayer.getCurrentTile())) {
+            return false;
+        }
+        
+        // 寻找可移动的安全板块
+        Board board = Game.getInstance().getBoard();
+        List<Tile> possibleTiles = new ArrayList<>();
+        
+        for (Tile tile : board.getAdjacentTiles(currentTile)) {
+            if (tile.isNavigable()) {
+                possibleTiles.add(tile);
+            }
+        }
+        
+        // 如果有安全板块，随机选择一个
+        if (!possibleTiles.isEmpty()) {
+            Tile safeTile = possibleTiles.get(0);
+            sinkingPlayer.setCurrentTile(safeTile);
+            useAction();
+            return true;
+        }
+        
+        return false;
+    }
 }
 
 
