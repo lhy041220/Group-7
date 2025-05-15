@@ -454,6 +454,26 @@ public class Player {
         
         return possibleShoreUps;
     }
+
+    public boolean moveOtherPlayer(Player targetPlayer, Tile destinationTile) {
+        if (role != Role.NAVIGATOR || targetPlayer == null || destinationTile == null) {
+            return false;
+        }
+        
+        // 检查移动距离是否在1-2步内
+        int distance = calculateDistance(targetPlayer.getCurrentTile(), destinationTile);
+        if (distance > 0 && distance <= 2 && destinationTile.isNavigable()) {
+            targetPlayer.setCurrentTile(destinationTile);
+            useAction();
+            return true;
+        }
+        return false;
+    }
+    
+    private int calculateDistance(Tile from, Tile to) {
+        if (from == null || to == null) return -1;
+        return Math.abs(from.getRow() - to.getRow()) + Math.abs(from.getCol() - to.getCol());
+    }
 }
 
 
