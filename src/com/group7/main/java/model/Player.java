@@ -501,6 +501,21 @@ public class Player {
         
         return false;
     }
+
+    public boolean useHelicopterLiftCard(HelicopterLiftCard card, List<Player> playersToLift, Tile destinationTile) {
+        if (!hand.contains(card) || destinationTile == null || !destinationTile.isNavigable()) {
+            return false;
+        }
+        
+        // 移动所有玩家到目标板块
+        for (Player player : playersToLift) {
+            player.setCurrentTile(destinationTile);
+        }
+        
+        // 使用并丢弃卡牌
+        hand.remove(card);
+        return true;
+    }
 }
 
 
