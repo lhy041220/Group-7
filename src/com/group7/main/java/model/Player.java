@@ -2,10 +2,14 @@ package model;
 
 import lombok.Getter;
 import model.card.*;
-import model.enums.Role; 
+import model.enums.Role;
+import model.enums.TreasureType;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class Player {
@@ -85,6 +89,18 @@ public class Player {
             card.useCard(this);
             hand.remove(card);
         }
+    }
+
+    private Set<TreasureType> collectedTreasures = new HashSet<>();
+
+    // 假设每个玩家有个集合保存已经获得的宝藏
+    public boolean hasCollectedTreasure(TreasureType treasureType) {
+        // 假设有这样一个字段
+        return collectedTreasures != null && collectedTreasures.contains(treasureType);
+    }
+
+    public void collectTreasure(TreasureType treasureType) {
+        collectedTreasures.add(treasureType);
     }
      
     public void useSpecialAbility(Tile destinationTile) {  
