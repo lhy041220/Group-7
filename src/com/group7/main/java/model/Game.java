@@ -3,12 +3,16 @@ package model;
 import lombok.Setter;
 import model.card.*;
 import model.enums.*;
+import model.card.HelicopterLiftCard;
 
 import lombok.Getter;
 import model.enums.GameState;
 
 import java.util.List;
 import java.util.ArrayList;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 public class Game {
@@ -100,19 +104,79 @@ public class Game {
         // 通知GameController让玩家选择丢弃的卡牌
     }
 
+    // 检查是否获得某个宝藏
+    private boolean hasTreasure(TreasureType treasureType) {
+        // 你的代码没有全局已获得宝藏集合，所以遍历所有玩家手中手牌
+        for (Player player : players) {
+            if (player.hasCollectedTreasure(treasureType)) return true;
+        }
+        return false;
+    }
+
+    // 检查所有玩家是否都在愚者着陆点
+    private boolean allPlayersAtHelipad() {
+        for (Player player : players) {
+            Tile curr = player.getCurrentTile();
+            if (curr == null || curr.getType() != TileType.FOOLS_LANDING) return false;
+        }
+        return true;
+    }
+
+    // 任一玩家是否有直升机牌
+    private boolean anyPlayerHasHelicopter() {
+        for (Player player : players) {
+            for (Card card : player.getHand()) {
+                if (card instanceof HelicopterLiftCard) return true;
+            }
+        }
+        return false;
+    }
+
     /**
-     * 检查游戏胜利条件
+     * 检查游戏胜利条件（有四宝、全员到愚者着陆点、手里有直升机卡）
      */
     public boolean checkWinCondition() {
-        // 实现胜利条件检查逻辑
-        return false;
+        return hasTreasure(TreasureType.EARTH) &&
+                hasTreasure(TreasureType.WIND) &&
+                hasTreasure(TreasureType.FIRE) &&
+                hasTreasure(TreasureType.OCEAN) &&
+                allPlayersAtHelipad() &&
+                anyPlayerHasHelicopter();
     }
 
     /**
      * 检查游戏失败条件
      */
     public boolean checkLoseCondition() {
-        // 实现失败条件检查逻辑
+        // 1. 愚者着陆点沉没
+        if (board.isHelipadSunk()) return true;
+
+        // 2. 某种宝藏未获得且两块宝藏板块全部沉没
+        for (TreasureType type : TreasureType.values()) {
+            if (type == TreasureType.NONE) continue;
+            if (!hasTreasure(type) && board.isAllTreasureTilesSunk(type)) return true;
+        }
+
+        // 3. 有玩家无法移动（被困，不可达，也可补充diver特例）
+        for (Player player : players) {
+            if (player.getCurrentTile() == null || !player.getCurrentTile().isNavigable()) {
+                // 检查相邻可通行Tile
+                boolean canEscape = false;
+                for (Tile adj : board.getAdjacentTiles(player.getCurrentTile())) {
+                    if (adj != null && adj.isNavigable()) {
+                        canEscape = true; break;
+                    }
+                }
+                if (!canEscape) return true;
+            }
+        }
+
+        // 4. 水位到顶
+        if (waterLevel.getCurrentLevel() >= 9) return true;
+
+        // 5. 宝藏牌抽光且弃牌堆也空，并且还没赢
+        if (treasureDeck.getRemainingCards() == 0 && treasureDeck.getDiscardedCards() == 0) return true;
+
         return false;
     }
 
