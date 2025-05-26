@@ -63,10 +63,13 @@ public class Player {
         hand.remove(card);
     }
 
-    public void moveToTile(Tile destinationTile) {
+    public boolean moveToTile(Tile destinationTile) {
         // 检查移动是否合法
         if (canMoveTo(destinationTile)) {
             this.currentTile = destinationTile;
+            return true;
+        }else {
+            return false;
         }
     }
 
