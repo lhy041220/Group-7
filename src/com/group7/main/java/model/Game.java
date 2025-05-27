@@ -7,9 +7,11 @@ import model.card.HelicopterLiftCard;
 
 import lombok.Getter;
 import model.enums.GameState;
+import java.util.Queue;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -158,18 +160,18 @@ public class Game {
         }
 
         // 3. 有玩家无法移动（被困，不可达，也可补充diver特例）
-        for (Player player : players) {
-            if (player.getCurrentTile() == null || !player.getCurrentTile().isNavigable()) {
-                // 检查相邻可通行Tile
-                boolean canEscape = false;
-                for (Tile adj : board.getAdjacentTiles(player.getCurrentTile())) {
-                    if (adj != null && adj.isNavigable()) {
-                        canEscape = true; break;
-                    }
-                }
-                if (!canEscape) return true;
+        for (int i = 0; i < players.size(); i++) {
+            Player player = players.get(i);
+            if (!canPlayerEscape(player)) {
+                // 输出方式一（显示职业）：
+                System.out.println("玩家" + (i + 1) + " [" + player.getRole() + "] 已被困，游戏失败！");
+                // 或者你只想显示职业：
+                // System.out.println("职业 " + player.getRole() + " 已被困，游戏失败！");
+                return true; // 游戏失败
             }
         }
+
+
 
         // 4. 水位到顶
         if (waterLevel.getCurrentLevel() >= 9) return true;
@@ -256,5 +258,73 @@ public class Game {
         return players.get(currentPlayerIndex);
     }
 
+    // 在Game.java里新增：
+    /**
+     * 细化职业能力的“玩家是否还能逃脱”的判定。适配所有职业。
+     * @param player 检查的玩家
+     * @return true=还能逃脱；false=被困
+     */
+    public boolean canPlayerEscape(Player player) {
+        Role role = player.getRole();
+        Tile currTile = player.getCurrentTile();
 
+        if (currTile == null || !currTile.isNavigable()) {
+            // 玩家当前板块已沉没或不可通行，直接认为被困
+            return false;
+        }
+
+        // 飞行家：任意未沉没格都能飞
+        if (role == Role.PILOT) {
+            for (Tile tile : board.getAllTiles()) {
+                if (tile != null && tile.isNavigable()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // 潜水员：BFS所有相连的sunk/flooded格，能爬出去就未被困
+        if (role == Role.DIVER) {
+            Set<Tile> visited = new HashSet<>();
+            Queue<Tile> queue = new LinkedList<>();
+            queue.add(currTile);
+            visited.add(currTile);
+
+            while (!queue.isEmpty()) {
+                Tile t = queue.poll();
+                for (Tile adj : board.getAdjacentTiles(t)) {
+                    if (adj == null || visited.contains(adj)) continue;
+                    if (adj.isNavigable()) {
+                        return true;
+                    }
+                    // 能穿过被水淹和沉没的格
+                    if (adj.isFlooded() || adj.isSunk()) {
+                        queue.add(adj);
+                        visited.add(adj);
+                    }
+                }
+            }
+            return false;
+        }
+
+        // 探险家：可斜向移动（如果你Role. EXPLORER加了这个功能，放开此分支扩展）
+    /*
+    if (role == Role.EXPLORER) {
+        for (Tile adj : board.getDiagonalAndOrthogonalTiles(currTile)) { // 你文档10未定义该方法，如有自己实现
+            if (adj != null && adj.isNavigable()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    */
+
+        // 其他职业：只要正方向有一格能走，就算没被困
+        for (Tile adj : board.getAdjacentTiles(currTile)) {
+            if (adj != null && adj.isNavigable()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
