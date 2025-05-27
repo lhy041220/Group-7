@@ -98,10 +98,6 @@ public class Player {
         // 假设有这样一个字段
         return collectedTreasures != null && collectedTreasures.contains(treasureType);
     }
-
-    public void collectTreasure(TreasureType treasureType) {
-        collectedTreasures.add(treasureType);
-    }
      
     public void useSpecialAbility(Tile destinationTile) {  
         // 执行当前角色的特殊能力 (新)
