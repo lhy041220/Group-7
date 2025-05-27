@@ -82,6 +82,7 @@ public class GameController {
         }
     }
 
+
     /************ 回合、阶段主流程 ************/
     // 抽宝藏卡阶段
     private void handleDrawTreasurePhase() {
@@ -168,5 +169,7 @@ public class GameController {
         mainFrame.updateWaterLevel(game.getWaterLevel().getCurrentLevel());
         // 可拓展：更新玩家信息面板、卡牌面板等
     }
+
+
 
 }
