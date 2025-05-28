@@ -5,6 +5,7 @@ import model.*;
 import model.card.*;
 import view.gamePanel.MainFrame;
 import model.enums.GameState;
+import model.TurnManager.ActionType;
 
 import javax.swing.*;
 
@@ -48,10 +49,14 @@ public class GameController {
     // 处理玩家主动移动
     public void handlePlayerMove(Tile destination) {
         Player player = game.getCurrentPlayer();
-        if (player.getRemainingActions() > 0 && player.moveToTile(destination)) {
-            mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 移动到了" + destination);
-            player.useAction();
-            checkAfterPlayerAction(player);
+        if (player.getRemainingActions() > 0) {
+            // 直接调用player的移动方法
+            if (player.moveToTile(destination)) {
+                mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 移动到了" + destination);
+                player.useAction();
+                mainFrame.updateBoard(game.getBoard());
+                checkAfterPlayerAction(player);
+            }
         }
     }
 
@@ -59,30 +64,43 @@ public class GameController {
     public void handlePlayerShoreUp(Tile tile) {
         Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0 && tile.isFlooded() && !tile.isSunk()) {
-            tile.shoreUp();
-            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 对 " + tile.getType().getDisplayName() + " 排水");
-            player.useAction();
-            checkAfterPlayerAction(player);
-            mainFrame.updateBoard(game.getBoard());
+            // 直接调用player的排水方法
+            if (player.shoreUp(tile)) {
+                mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 对 " + tile.getType().getDisplayName() + " 排水");
+                mainFrame.updateBoard(game.getBoard());
+                checkAfterPlayerAction(player);
+            }
         }
     }
 
     // 使用特殊卡
     public void handlePlayerUseCard(SpecialCard card) {
         Player player = game.getCurrentPlayer();
-        player.useSpecialCard(card);
-        mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊卡: " + card.getName());
-        // 特殊卡用完记得检查是否要立刻进入下一步
-        checkAfterPlayerAction(player);
+        if (card.use(player)) {
+            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊卡: " + card.getName());
+            checkAfterPlayerAction(player);
+        }
     }
 
     // 每次行动后调用：用完行动点就进入抽牌/下阶段
     private void checkAfterPlayerAction(Player player) {
+        // 更新UI显示
+        mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
+
+        // 打印调试信息
+        System.out.println("检查行动后状态 - 玩家" + player.getPlayerId() + "剩余行动点：" + player.getRemainingActions());
+
         if (player.getRemainingActions() <= 0) {
-            mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 行动完毕！进入新阶段。");
+            mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 行动完毕！");
+            // 弹窗通知
+            JOptionPane.showMessageDialog(mainFrame,
+                    "玩家" + player.getPlayerId() + "行动点已用完，即将进入抽牌阶段",
+                    "回合阶段提示",
+                    JOptionPane.INFORMATION_MESSAGE);
+            // 进入下一阶段
             handleDrawTreasurePhase();
         } else {
-            mainFrame.addConsoleMessage("剩余行动：" + player.getRemainingActions());
+            mainFrame.addConsoleMessage("剩余行动点：" + player.getRemainingActions());
         }
     }
 
@@ -91,6 +109,13 @@ public class GameController {
     // 抽宝藏卡阶段
     private void handleDrawTreasurePhase() {
         Player curr = game.getCurrentPlayer();
+
+        // 弹窗通知进入抽牌阶段
+        JOptionPane.showMessageDialog(mainFrame,
+                "玩家" + curr.getPlayerId() + "进入抽宝藏卡阶段",
+                "回合阶段提示",
+                JOptionPane.INFORMATION_MESSAGE);
+
         boolean mustDiscard = false;
         for (int i = 0; i < 2; i++) {
             HandCard card = game.drawTreasureCard();
@@ -106,6 +131,7 @@ public class GameController {
                 // 你可在这里处理卡牌即时效果
             }
         }
+
         // 检查手牌上限
         if (curr.handExceedsLimit()) {
             // 让玩家丢卡，这里只打印日志，可扩展弹窗交互
@@ -113,6 +139,7 @@ public class GameController {
             mustDiscard = true;
             // 需配合UI完成丢弃流程，完成后进入下一阶段
         }
+
         if (!mustDiscard) {
             handleFloodPhase();
         }
@@ -120,9 +147,15 @@ public class GameController {
 
     // 洪水阶段
     private void handleFloodPhase() {
+        // 弹窗通知进入洪水阶段
+        JOptionPane.showMessageDialog(mainFrame,
+                "进入洪水阶段",
+                "回合阶段提示",
+                JOptionPane.INFORMATION_MESSAGE);
+
         int count = game.getWaterLevel().getFloodCardsCount();
         for (int i = 0; i < count; i++) {
-            game.drawFloodCards(); // 内部已处理flood状态与联动
+            game.drawFloodCards();// 内部已处理flood状态与联动
         }
         mainFrame.updateBoard(game.getBoard());
 
@@ -146,23 +179,30 @@ public class GameController {
         // 让Game更新当前玩家索引
         int nextIndex = (game.getCurrentPlayerIndex() + 1) % game.getPlayers().size();
         game.setCurrentPlayerIndex(nextIndex);
-        handleStartPlayerTurn(); // 切换新玩家，刷新主界面
+
+        // 弹窗通知玩家更换
+        JOptionPane.showMessageDialog(mainFrame,
+                "轮到玩家 " + (nextIndex + 1) + " 的回合",
+                "玩家更换提示",
+                JOptionPane.INFORMATION_MESSAGE);
+
+        handleStartPlayerTurn();
     }
 
     // 新玩家回合开始
     private void handleStartPlayerTurn() {
-        // 回合由TurnManager推进
-        game.getTurnManager().nextPhase(); // 切换到下个玩家和阶段
         Player curr = game.getCurrentPlayer();
         curr.resetActionsForTurn();
         mainFrame.addConsoleMessage("轮到玩家 " + curr.getPlayerId());
         updateAllUI();
+        // 通知游戏回合开始
+        game.notifyTurnStarted(curr);
     }
 
     // 结束玩家回合（如由按钮控制）
     public void endPlayerTurn() {
         mainFrame.addConsoleMessage("玩家 " + game.getCurrentPlayer().getPlayerId() + " 主动结束本回合。");
-        handleDrawTreasurePhase(); // 直接进入抽宝藏卡阶段
+        game.getTurnManager().nextPhase(); // 进入下一阶段
     }
 
     /************ 工具&流程方法 ************/
