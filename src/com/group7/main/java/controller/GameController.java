@@ -13,6 +13,7 @@ public class GameController {
     private Game game;
     private MainFrame mainFrame;
 
+
     public GameController(Game game, MainFrame mainFrame) {
         // 默认构造函数
         this.game = game;
@@ -45,16 +46,18 @@ public class GameController {
     }
 
     // 处理玩家主动移动
-    public void handlePlayerMove(Player player, Tile destination) {
+    public void handlePlayerMove(Tile destination) {
+        Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0 && player.moveToTile(destination)) {
-            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 移动到了 " + destination);
+            mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 移动到了" + destination);
             player.useAction();
             checkAfterPlayerAction(player);
         }
     }
 
     // 处理排水
-    public void handlePlayerShoreUp(Player player, Tile tile) {
+    public void handlePlayerShoreUp(Tile tile) {
+        Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0 && tile.isFlooded() && !tile.isSunk()) {
             tile.shoreUp();
             mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 对 " + tile.getType().getDisplayName() + " 排水");
@@ -65,7 +68,8 @@ public class GameController {
     }
 
     // 使用特殊卡
-    public void handlePlayerUseCard(Player player, SpecialCard card) {
+    public void handlePlayerUseCard(SpecialCard card) {
+        Player player = game.getCurrentPlayer();
         player.useSpecialCard(card);
         mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊卡: " + card.getName());
         // 特殊卡用完记得检查是否要立刻进入下一步
@@ -131,8 +135,18 @@ public class GameController {
             announceGameEnd(false, "游戏失败条件达成！");
             return;
         }
-        // 正常进行下一轮
-        handleStartPlayerTurn();
+        // 正常进行下一轮：切换玩家并开始新回合
+        advanceToNextPlayerTurn();
+    }
+
+    /**
+     * 推进到下一个玩家
+     */
+    private void advanceToNextPlayerTurn() {
+        // 让Game更新当前玩家索引
+        int nextIndex = (game.getCurrentPlayerIndex() + 1) % game.getPlayers().size();
+        game.setCurrentPlayerIndex(nextIndex);
+        handleStartPlayerTurn(); // 切换新玩家，刷新主界面
     }
 
     // 新玩家回合开始
@@ -167,9 +181,7 @@ public class GameController {
     private void updateAllUI() {
         mainFrame.updateBoard(game.getBoard());
         mainFrame.updateWaterLevel(game.getWaterLevel().getCurrentLevel());
+        mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
         // 可拓展：更新玩家信息面板、卡牌面板等
     }
-
-
-
 }
