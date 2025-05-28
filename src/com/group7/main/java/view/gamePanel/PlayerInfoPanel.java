@@ -1,7 +1,11 @@
 package view.gamePanel;
 
+import model.Player;
+
 import javax.swing.*;
 import java.awt.*;
+
+import java.util.List;
 
 public class PlayerInfoPanel extends JPanel {
 
@@ -22,4 +26,18 @@ public class PlayerInfoPanel extends JPanel {
         add(new JLabel("Player 2"));
         // ... 添加更多玩家
     }
+
+    public void updatePlayerInfos(List<Player> players, int currentIdx) {
+        this.removeAll();
+        for (int i = 0; i < players.size(); i++) {
+            Player p = players.get(i);
+            JLabel label = new JLabel("Player " + p.getPlayerId()
+                    + ((i == currentIdx) ? "（行动中）" : ""));
+            if (i == currentIdx) label.setFont(label.getFont().deriveFont(Font.BOLD));
+            this.add(label);
+        }
+        this.revalidate();
+        this.repaint();
+    }
+
 }

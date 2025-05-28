@@ -46,6 +46,10 @@ public class TurnManager {
 
         // 通知GameController更新UI或通知玩家
         game.notifyTurnStarted(currentPlayer);
+
+        for (GameEventListener l : game.getEventListeners()) {
+            l.onTurnStart(currentPlayer, roundNumber);
+        }
     }
 
     // 玩家执行行动
@@ -156,7 +160,13 @@ public class TurnManager {
 
     // 结束当前回合
     private void endTurn() {
-        // 回合结束时的各种检查
+        Player currentPlayer = getCurrentPlayer();
+
+        // 结束前先通知
+        for (GameEventListener l : game.getEventListeners()) {
+            l.onTurnEnd(currentPlayer, roundNumber);
+        }
+
         // 1. 检查游戏胜利条件
         if (game.checkWinCondition()) {
             game.setGameState(GameState.WON);
@@ -168,7 +178,6 @@ public class TurnManager {
             game.setGameState(GameState.LOST);
             return;
         }
-
         // 继续游戏
         nextPhase();
     }

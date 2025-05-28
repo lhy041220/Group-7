@@ -1,7 +1,7 @@
 package model;
 
 import model.enums.TileType;
-
+import model.enums.TreasureType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -69,6 +69,24 @@ public class Board {
         return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1) || (rowDiff == 0 && colDiff == 0);
     }
 
+    // 检查愚者着陆点是否沉没
+    public boolean isHelipadSunk() {
+        Tile helipad = getTileByType(TileType.FOOLS_LANDING);
+        return helipad == null || helipad.isSunk();
+    }
+
+    // 检查某个宝藏的两块板是否全部沉没
+    public boolean isAllTreasureTilesSunk(TreasureType treasureType) {
+        int total = 0, sunk = 0;
+        for (Tile tile : getAllTiles()) {
+            if (tile.getTreasure() == treasureType) {
+                total++;
+                if (tile.isSunk()) sunk++;
+            }
+        }
+        // 只要两块全沉即可，通常有两块
+        return total > 0 && sunk == total;
+    }
 
     /**
      * 根据坐标获取Tile
