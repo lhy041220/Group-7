@@ -23,6 +23,7 @@ public class MainFrame extends JFrame {
     public final Event onEndTurnButtonClick;
 
     private GameBoardPanel gameBoardPanel;
+    @Getter
     private PlayerInfoPanel playerInfoPanel;
     private CardPanel cardPanel;
     private ControlPanel controlPanel;
@@ -87,6 +88,10 @@ public class MainFrame extends JFrame {
         controlPanel.getGiveCardButton().addActionListener(e -> onGiveCardButtonClick.invoke(this, null));
         controlPanel.getCaptureTreasureButton().addActionListener(e -> onCaptureTreasureButtonClick.invoke(this, null));
         controlPanel.getEndTurnButton().addActionListener(e -> onEndTurnButtonClick.invoke(this, null));
+    }
+
+    public PlayerInfoPanel getPlayerInfoPanel() {
+        return playerInfoPanel;
     }
 
     public void updateBoard(Board board) {

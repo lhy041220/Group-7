@@ -33,10 +33,12 @@ public class Game {
     private Deck<FloodCard> floodDeck;
     private TurnManager turnManager;
 
+    @Setter
     private int currentPlayerIndex;
 
     @Setter
     private GameState gameState;
+
 
     private final List<GameEventListener> eventListeners = new ArrayList<>();
 
@@ -397,5 +399,4 @@ public class Game {
         }
         return false;
     }
-
 }

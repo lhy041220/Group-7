@@ -24,5 +24,4 @@ public class Event<T> {
             listener.accept(args);
         }
     }
-
 }
