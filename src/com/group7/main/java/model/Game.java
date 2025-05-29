@@ -15,6 +15,7 @@ import java.util.LinkedList;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Arrays;
 
 @Getter
 public class Game {
@@ -81,7 +82,23 @@ public class Game {
     }
 
     private void initializePlayers(int numPlayers) {
-        // 创建玩家并安置到起始瓦片
+        players.clear();
+        // 角色池
+        List<Role> roles = new ArrayList<>(Arrays.asList(Role.values()));
+        java.util.Collections.shuffle(roles);
+        // 门口池，按优先级分配
+        TileType[] startTiles = new TileType[] {
+            TileType.FOOLS_LANDING,
+            TileType.BRONZE_GATE,
+            TileType.COPPER_GATE,
+            TileType.GOLD_GATE
+        };
+        for (int i = 0; i < numPlayers; i++) {
+            Tile startTile = board.getTileByType(startTiles[i]);
+            Role role = roles.get(i);
+            Player player = new Player(i + 1, startTile, role);
+            players.add(player);
+        }
     }
 
     public void startGame(int numPlayers) {
@@ -93,12 +110,6 @@ public class Game {
         }
 
         gameState = GameState.RUNNING;
-
-        // 初始化玩家list
-        for (int i = 0; i < numPlayers; i++) {
-            Player player = new Player(i + 1, board.getTileByType(TileType.HOWLING_GARDEN));
-            players.add(player);
-        }
 
         // 洗牌
         treasureDeck.shuffle();
