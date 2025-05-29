@@ -133,7 +133,7 @@ public class ForbiddenIslandGame {
         startButton.setBackground(new Color(200, 120, 0));
         startButton.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
         startButton.setFocusPainted(false);
-        startButton.setBounds(300, 400, 200, 60);
+        startButton.setBounds(300, 320, 200, 60);
 
         // 创建游戏规则按钮
         JButton rulesButton = new JButton("游戏规则");
@@ -142,7 +142,7 @@ public class ForbiddenIslandGame {
         rulesButton.setBackground(new Color(200, 120, 0));
         rulesButton.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
         rulesButton.setFocusPainted(false);
-        rulesButton.setBounds(300, 450, 200, 60);
+        rulesButton.setBounds(300, 420, 200, 60);
 
         // 添加鼠标悬停效果
         java.awt.event.MouseAdapter hoverEffect = new java.awt.event.MouseAdapter() {
