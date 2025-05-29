@@ -3,14 +3,9 @@ package view.gamePanel;
 import lombok.Getter;
 import model.Board;
 import util.Event;
-import model.card.SpecialCard;
-import model.card.HelicopterLiftCard;
-import model.card.SandbagCard;
 
 import javax.swing.*;
 import java.awt.*;
-
-
 
 public class MainFrame extends JFrame {
 
@@ -23,9 +18,7 @@ public class MainFrame extends JFrame {
     public final Event onShoreUpButtonClick;
     public final Event onGiveCardButtonClick;
     public final Event onCaptureTreasureButtonClick;
-    public final Event onCollectTreasureButtonClick;
     public final Event onEndTurnButtonClick;
-    public final Event onUseSpecialAbilityButtonClick;
 
     private GameBoardPanel gameBoardPanel;
     @Getter
@@ -35,34 +28,27 @@ public class MainFrame extends JFrame {
     private WaterLevelPanel waterLevelPanel;
     private ConsolePanel consolePanel;
 
-    public interface TileClickEvent {
-        void onTileClicked(int row, int col);
-    }
-    private TileClickEvent tileClickEvent;
-    public void setTileClickEvent(TileClickEvent event) {
-        this.tileClickEvent = event;
-        gameBoardPanel.setTileClickListener((row, col) -> {
-            if (tileClickEvent != null) tileClickEvent.onTileClicked(row, col);
-        });
-    }
-
     private MainFrame() {
         setTitle("Forbidden Island");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1500, 700);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10, 10)); // 添加组件间距
 
         onMoveButtonClick = new Event();
         onShoreUpButtonClick = new Event();
         onGiveCardButtonClick = new Event();
         onCaptureTreasureButtonClick = new Event();
-        onCollectTreasureButtonClick = new Event();
         onEndTurnButtonClick = new Event();
-        onUseSpecialAbilityButtonClick = new Event();
 
         initComponents();
         addComponents();
         addAllListeners();
+
+        // 调整窗口大小以适应内容，并居中显示
+        pack();
+        setLocationRelativeTo(null);
+
+        // 设置最小窗口大小
+        setMinimumSize(new Dimension(1200, 800));
     }
 
     /**
@@ -75,6 +61,12 @@ public class MainFrame extends JFrame {
         controlPanel = new ControlPanel();
         waterLevelPanel = new WaterLevelPanel();
         consolePanel = new ConsolePanel(this);
+
+        // 设置面板的首选大小
+        waterLevelPanel.setPreferredSize(new Dimension(200, 300));
+        consolePanel.setPreferredSize(new Dimension(200, 300));
+        playerInfoPanel.setPreferredSize(new Dimension(200, 0));
+        cardPanel.setPreferredSize(new Dimension(0, 150));
     }
 
     /**
@@ -82,35 +74,38 @@ public class MainFrame extends JFrame {
      */
     private void addComponents() {
         // 创建左侧面板，包含水位面板和控制台面板
-        JPanel leftPanel = new JPanel(new BorderLayout());
+        JPanel leftPanel = new JPanel(new BorderLayout(0, 10));
+        leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         leftPanel.add(waterLevelPanel, BorderLayout.NORTH);
         leftPanel.add(consolePanel, BorderLayout.CENTER);
 
         // 创建中央面板，包含游戏板和卡片面板
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.add(gameBoardPanel, BorderLayout.CENTER);
+        JPanel centerPanel = new JPanel(new BorderLayout(0, 10));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // 创建一个包装游戏板的面板，用于居中显示
+        JPanel gameBoardWrapper = new JPanel(new GridBagLayout());
+        gameBoardWrapper.add(gameBoardPanel);
+        centerPanel.add(gameBoardWrapper, BorderLayout.CENTER);
         centerPanel.add(cardPanel, BorderLayout.SOUTH);
+
+        // 创建右侧面板
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        rightPanel.add(playerInfoPanel, BorderLayout.CENTER);
 
         // 添加所有面板到主窗口
         add(leftPanel, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
-        add(playerInfoPanel, BorderLayout.EAST);
+        add(rightPanel, BorderLayout.EAST);
         add(controlPanel, BorderLayout.NORTH);
     }
 
     private void addAllListeners() {
         controlPanel.getMoveButton().addActionListener(e -> onMoveButtonClick.invoke(this, null));
-        controlPanel.getShoreUpButton().addActionListener(e -> {
-            onShoreUpButtonClick.invoke(this, null);
-            if (shoreUpCallback != null) shoreUpCallback.onShoreUpMode();
-        });
+        controlPanel.getShoreUpButton().addActionListener(e -> onShoreUpButtonClick.invoke(this, null));
         controlPanel.getGiveCardButton().addActionListener(e -> onGiveCardButtonClick.invoke(this, null));
         controlPanel.getCaptureTreasureButton().addActionListener(e -> onCaptureTreasureButtonClick.invoke(this, null));
-        controlPanel.getCollectTreasureButton().addActionListener(e -> onCollectTreasureButtonClick.invoke(this, null));
-        controlPanel.getUseSpecialAbilityButton().addActionListener(e -> {
-            onUseSpecialAbilityButtonClick.invoke(this, null);
-            if (specialAbilityCallback != null) specialAbilityCallback.onSpecialAbility();
-        });
         controlPanel.getEndTurnButton().addActionListener(e -> onEndTurnButtonClick.invoke(this, null));
     }
 
@@ -130,60 +125,45 @@ public class MainFrame extends JFrame {
         consolePanel.addMessage(message);
     }
 
-    public void updatePlayerHand(java.util.List<model.card.Card> cards) {
-        cardPanel.updatePlayerHand(cards);
+    /**
+     * 显示游戏结束对话框
+     * @param message 游戏结束的原因或胜利信息
+     */
+    public void showGameOverDialog(String message) {
+        // 禁用所有控制按钮
+        controlPanel.setButtonsEnabled(false);
+
+        // 创建游戏结束对话框
+        JDialog dialog = new JDialog(this, "游戏结束", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+
+        // 创建消息面板
+        JPanel messagePanel = new JPanel(new BorderLayout(10, 10));
+        messagePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // 添加消息标签
+        JLabel messageLabel = new JLabel(message);
+        messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        messagePanel.add(messageLabel, BorderLayout.CENTER);
+
+        // 创建按钮面板
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        JButton closeButton = new JButton("关闭游戏");
+        closeButton.addActionListener(e -> {
+            dialog.dispose();
+            System.exit(0);
+        });
+        buttonPanel.add(closeButton);
+
+        // 添加面板到对话框
+        dialog.add(messagePanel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // 设置对话框属性
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+        dialog.setVisible(true);
     }
-
-    public ControlPanel getControlPanel() { return controlPanel; }
-
-    public void handleSpecialCardClick(SpecialCard card) {
-        if (card instanceof HelicopterLiftCard) {
-            // 弹窗选择目标玩家和目标格子（这里只做简单演示，后续可美化）
-            String input = JOptionPane.showInputDialog(this, "请输入目标格子的行列（如3,4）：");
-            if (input != null && input.contains(",")) {
-                String[] arr = input.split(",");
-                try {
-                    int row = Integer.parseInt(arr[0].trim());
-                    int col = Integer.parseInt(arr[1].trim());
-                    // 这里只传递目标格子，实际可扩展为多玩家
-                    if (specialCardCallback != null) specialCardCallback.onHelicopterLift(card, row, col);
-                } catch (Exception e) { JOptionPane.showMessageDialog(this, "输入格式错误"); }
-            }
-        } else if (card instanceof SandbagCard) {
-            String input = JOptionPane.showInputDialog(this, "请输入要排水的格子的行列（如3,4）：");
-            if (input != null && input.contains(",")) {
-                String[] arr = input.split(",");
-                try {
-                    int row = Integer.parseInt(arr[0].trim());
-                    int col = Integer.parseInt(arr[1].trim());
-                    if (specialCardCallback != null) specialCardCallback.onSandbag(card, row, col);
-                } catch (Exception e) { JOptionPane.showMessageDialog(this, "输入格式错误"); }
-            }
-        }
-    }
-    // 回调接口
-    public interface SpecialCardCallback {
-        void onHelicopterLift(SpecialCard card, int row, int col);
-        void onSandbag(SpecialCard card, int row, int col);
-    }
-    private SpecialCardCallback specialCardCallback;
-    public void setSpecialCardCallback(SpecialCardCallback cb) { this.specialCardCallback = cb; }
-
-    public void highlightBoardTiles(java.util.List<int[]> positions) {
-        gameBoardPanel.highlightTiles(positions);
-    }
-    public void clearBoardHighlight() {
-        gameBoardPanel.clearHighlight();
-    }
-
-    public interface ShoreUpCallback { void onShoreUpMode(); }
-    private ShoreUpCallback shoreUpCallback;
-    public void setShoreUpCallback(ShoreUpCallback cb) { this.shoreUpCallback = cb; }
-
-    public interface SpecialAbilityCallback { void onSpecialAbility(); }
-    private SpecialAbilityCallback specialAbilityCallback;
-    public void setSpecialAbilityCallback(SpecialAbilityCallback cb) { this.specialAbilityCallback = cb; }
-
-    public CardPanel getCardPanel() { return cardPanel; }
 
 }

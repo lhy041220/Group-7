@@ -13,9 +13,11 @@ import java.awt.event.MouseEvent;
 public class GameBoardPanel extends JPanel {
 
     private JPanel[][] tilePanels;
-    private final int TILE_SIZE = 70;
+    private final int TILE_SIZE = 80;
     private final int GRID_SIZE = 6;
-    private final int GAP = 5;
+    private final int GAP = 10;
+    private final int PANEL_WIDTH = GRID_SIZE * (TILE_SIZE + GAP) + GAP;
+    private final int PANEL_HEIGHT = GRID_SIZE * (TILE_SIZE + GAP) + GAP;
 
     // 定义不同状态的颜色
     private final Color NORMAL_COLOR = new Color(144, 238, 144); // 浅绿色
@@ -23,7 +25,6 @@ public class GameBoardPanel extends JPanel {
     private final Color SUNKEN_COLOR = new Color(25, 25, 112);    // 深蓝色
     private final Color EMPTY_COLOR = new Color(0, 0, 0, 0);      // 透明（用于角落的空位）
 
-    private final int HORIZONTAL_MARGIN = 150; // 添加水平边距使版图居中
 
     @Setter
     private TileClickListener tileClickListener;
@@ -31,44 +32,14 @@ public class GameBoardPanel extends JPanel {
         void onTileClicked(int row, int col);
     }
 
-    private java.util.Set<String> highlightedTiles = new java.util.HashSet<>();
-    public void highlightTiles(java.util.List<int[]> positions) {
-        highlightedTiles.clear();
-        for (int[] pos : positions) {
-            highlightedTiles.add(pos[0] + "," + pos[1]);
-        }
-        updateBoardHighlight();
-    }
-    public void clearHighlight() {
-        highlightedTiles.clear();
-        updateBoardHighlight();
-    }
-    private void updateBoardHighlight() {
-        for (int row = 0; row < GRID_SIZE; row++) {
-            for (int col = 0; col < GRID_SIZE; col++) {
-                JPanel tilePanel = tilePanels[row][col];
-                if (highlightedTiles.contains(row + "," + col)) {
-                    tilePanel.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
-                } else {
-                    tilePanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
-                }
-            }
-        }
-        repaint();
-    }
-
     public GameBoardPanel() {
         this.tilePanels = new JPanel[GRID_SIZE][GRID_SIZE];
-
         setLayout(null); // 使用绝对布局
-        // 增加面板宽度以容纳水平边距
-        setPreferredSize(new Dimension(GRID_SIZE * (TILE_SIZE + GAP) + GAP + HORIZONTAL_MARGIN * 2,
-                GRID_SIZE * (TILE_SIZE + GAP) + GAP));
+        // 使用GridBagLayout来实现灵活的布局
+        setPreferredSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
         setBackground(new Color(0, 50, 100)); // 深蓝色背景代表海洋
-
         initializeTilePanels();
     }
-
 
     /**
      * 初始化所有瓦片面板
@@ -76,12 +47,7 @@ public class GameBoardPanel extends JPanel {
     private void initializeTilePanels() {
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
-                int x = HORIZONTAL_MARGIN + GAP + col * (TILE_SIZE + GAP);
-                int y = GAP + row * (TILE_SIZE + GAP);
-
-                JPanel tilePanel = new JPanel();
-                tilePanel.setLayout(new BorderLayout());
-                tilePanel.setBounds(x, y, TILE_SIZE, TILE_SIZE);
+                JPanel tilePanel = new JPanel(new BorderLayout());
                 tilePanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
 
                 final int finalRow = row;
@@ -96,6 +62,23 @@ public class GameBoardPanel extends JPanel {
                 });
 
                 tilePanels[row][col] = tilePanel;
+
+                // 计算面板位置
+                int x = GAP + col * (TILE_SIZE + GAP);
+                int y = GAP + row * (TILE_SIZE + GAP);
+
+                // 根据行数调整水平位置
+                if (row == 0 || row == 5) { // 第一行和最后一行只有中间两个板块
+                    if (col < 2 || col > 3) { // 不是中间两列的不显示
+                        tilePanel.setVisible(false);
+                    }
+                } else if (row == 1 || row == 4) { // 第二行和倒数第二行有四个板块
+                    if (col < 1 || col > 4) { // 最边上的不显示
+                        tilePanel.setVisible(false);
+                    }
+                }
+
+                tilePanel.setBounds(x, y, TILE_SIZE, TILE_SIZE);
                 add(tilePanel);
             }
         }
@@ -107,18 +90,30 @@ public class GameBoardPanel extends JPanel {
     public void updateBoard(Board board) {
         for (int row = 0; row < GRID_SIZE; row++) {
             for (int col = 0; col < GRID_SIZE; col++) {
+                JPanel tilePanel = tilePanels[row][col];
+
+                // 检查是否是应该显示的位置
+                boolean shouldBeVisible = true;
+                if (row == 0 || row == 5) { // 第一行和最后一行
+                    shouldBeVisible = (col == 2 || col == 3);
+                } else if (row == 1 || row == 4) { // 第二行和倒数第二行
+                    shouldBeVisible = (col >= 1 && col <= 4);
+                }
+
+                if (!shouldBeVisible) {
+                    tilePanel.setVisible(false);
+                    continue;
+                }
+
                 try {
                     Tile tile = board.getTile(row, col);
                     updateTilePanel(row, col, tile);
+                    tilePanel.setVisible(true);
                 } catch (IllegalArgumentException e) {
-                    // 处理空瓦片（角落处没有瓦片）
-                    tilePanels[row][col].setBackground(EMPTY_COLOR);
-                    tilePanels[row][col].setOpaque(false);
-                    tilePanels[row][col].removeAll();
+                    tilePanel.setVisible(false);
                 }
             }
         }
-        updateBoardHighlight();
         revalidate();
         repaint();
     }
@@ -133,6 +128,7 @@ public class GameBoardPanel extends JPanel {
         if (tile == null) {
             tilePanel.setBackground(EMPTY_COLOR);
             tilePanel.setOpaque(false);
+            tilePanel.setVisible(false);
             return;
         }
 
@@ -151,7 +147,7 @@ public class GameBoardPanel extends JPanel {
         // 添加瓦片类型名称标签
         JLabel nameLabel = new JLabel(tile.getType().getDisplayName());
         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        nameLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK); // 沉没瓦片用白色文字
+        nameLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK);
         tilePanel.add(nameLabel, BorderLayout.CENTER);
 
         // 添加瓦片状态标签
@@ -167,7 +163,7 @@ public class GameBoardPanel extends JPanel {
 
         // 如果有宝藏类型且不是NONE，显示宝藏信息
         if (tile.getTreasure() != null && tile.getTreasure() != TreasureType.NONE) {
-            JLabel treasureLabel = new JLabel(tile.getTreasure().toString());
+            JLabel treasureLabel = new JLabel(tile.getTreasure().getDisplayName());
             treasureLabel.setHorizontalAlignment(SwingConstants.CENTER);
             treasureLabel.setForeground(Color.RED);
             tilePanel.add(treasureLabel, BorderLayout.NORTH);

@@ -6,6 +6,8 @@ import lombok.NoArgsConstructor;
 import model.enums.TileState;
 import model.enums.TileType;
 import model.enums.TreasureType;
+import java.util.ArrayList;
+import java.util.List;
 
 /***
  * 表示岛屿上的每个格子
@@ -19,6 +21,9 @@ public class Tile {
     private int row;
     private int col;
     private TreasureType treasure;
+    private boolean flooded;
+    private boolean sunk;
+    private List<Player> playersOnTile;
 
     private Tile(TileType type, int row, int col, TreasureType treasure) {
         this.type = type;
@@ -26,6 +31,9 @@ public class Tile {
         this.row = row;
         this.col = col;
         this.treasure = treasure;
+        this.flooded = false;
+        this.sunk = false;
+        this.playersOnTile = new ArrayList<>();
     }
 
     public static Tile createTileForType(TileType type, int row, int col, TreasureType treasure) {
@@ -41,6 +49,7 @@ public class Tile {
      */
     public void flood() {
         state = TileState.FLOODED;
+        flooded = true;
     }
 
     /**
@@ -48,6 +57,7 @@ public class Tile {
      */
     public void sink() {
         state = TileState.SUNK;
+        sunk = true;
     }
 
     /**
@@ -55,6 +65,8 @@ public class Tile {
      */
     public void shoreUp() {
         state = TileState.NORMAL;
+        flooded = false;
+        sunk = false;
     }
 
 
@@ -76,5 +88,33 @@ public class Tile {
     @Override
     public String toString() {
         return type.getDisplayName() + "(" + state + ")";
+    }
+
+    /**
+     * 检查是否有指定类型的宝藏
+     */
+    public boolean hasTreasure(TreasureType treasureType) {
+        return this.treasure == treasureType;
+    }
+
+    /**
+     * 获取板块名称
+     */
+    public String getName() {
+        return type.getDisplayName();
+    }
+
+    public List<Player> getPlayersOnTile() {
+        return playersOnTile;
+    }
+
+    public void addPlayer(Player player) {
+        if (!playersOnTile.contains(player)) {
+            playersOnTile.add(player);
+        }
+    }
+
+    public void removePlayer(Player player) {
+        playersOnTile.remove(player);
     }
 }

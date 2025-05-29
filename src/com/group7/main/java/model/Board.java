@@ -2,10 +2,16 @@ package model;
 
 import model.enums.TileType;
 import model.enums.TreasureType;
+import model.card.Card;
+import model.card.TreasureCard;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
+import java.util.Queue;
+import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * 代表禁闭岛游戏板
@@ -33,31 +39,49 @@ public class Board {
      * 初始化游戏板，创建所有的Tile
      */
     private void initializeBoard() {
-        // 创建不同的Tile
-        List<TileType> tileTypeList = Arrays.asList(TileType.values());
-
-        // 随机打乱列表
-        for (int i = tileTypeList.size() - 1; i > 0; i--) {
-            int j = random.nextInt(i + 1);
-            TileType temp = tileTypeList.get(i);
-            tileTypeList.set(i, tileTypeList.get(j));
-            tileTypeList.set(j, temp);
-        }
-
-        // 创建36个Tile (6x6)
-        int tileIndex = 0;
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
-                // 跳过四个角
-                if (isAdjacentTo(row, col, 0, 0) || isAdjacentTo(row, col, 0, cols - 1) ||
-                        isAdjacentTo(row, col, rows - 1, 0) || isAdjacentTo(row, col, rows - 1, cols - 1)) {
-                    tileTable[row][col] = null;
-                } else {
-                    TileType tileType = tileTypeList.get(tileIndex++);
-                    tileTable[row][col] = Tile.createTileForType(tileType, row, col);
-                }
+        //初始化所有位置为null
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                tileTable[i][j] = null;
             }
         }
+
+        // 创建特定位置的板块，并设置宝藏位置
+        // 第一行（2个板块）
+        tileTable[0][2] = Tile.createTileForType(TileType.WHISPERING_GARDEN, 0, 2, TreasureType.WIND);
+        tileTable[0][3] = Tile.createTileForType(TileType.HOWLING_GARDEN, 0, 3);
+
+        // 第二行（4个板块）
+        tileTable[1][1] = Tile.createTileForType(TileType.TIDAL_PALACE, 1, 1, TreasureType.OCEAN);
+        tileTable[1][2] = Tile.createTileForType(TileType.LOST_LAGOON, 1, 2);
+        tileTable[1][3] = Tile.createTileForType(TileType.PHANTOM_ROCK, 1, 3);
+        tileTable[1][4] = Tile.createTileForType(TileType.SILVER_GATE, 1, 4);
+
+        // 第三行（6个板块）
+        tileTable[2][0] = Tile.createTileForType(TileType.CRIMSON_FOREST, 2, 0, TreasureType.FIRE);
+        tileTable[2][1] = Tile.createTileForType(TileType.DUNES_OF_DECEPTION, 2, 1);
+        tileTable[2][2] = Tile.createTileForType(TileType.WATCHTOWER, 2, 2);
+        tileTable[2][3] = Tile.createTileForType(TileType.OBSERVATORY, 2, 3);
+        tileTable[2][4] = Tile.createTileForType(TileType.CAVE_OF_SHADOWS, 2, 4);
+        tileTable[2][5] = Tile.createTileForType(TileType.CAVE_OF_EMBERS, 2, 5, TreasureType.FIRE);
+
+        // 第四行（6个板块）
+        tileTable[3][0] = Tile.createTileForType(TileType.TEMPLE_OF_THE_MOON, 3, 0);
+        tileTable[3][1] = Tile.createTileForType(TileType.TEMPLE_OF_THE_SUN, 3, 1);
+        tileTable[3][2] = Tile.createTileForType(TileType.CORAL_PALACE, 3, 2, TreasureType.OCEAN);
+        tileTable[3][3] = Tile.createTileForType(TileType.WHISPERING_GARDEN, 3, 3, TreasureType.WIND);
+        tileTable[3][4] = Tile.createTileForType(TileType.MISTY_MARSH, 3, 4);
+        tileTable[3][5] = Tile.createTileForType(TileType.COPPER_GATE, 3, 5);
+
+        // 第五行（4个板块）
+        tileTable[4][1] = Tile.createTileForType(TileType.IRON_GATE, 4, 1, TreasureType.EARTH);
+        tileTable[4][2] = Tile.createTileForType(TileType.BRONZE_GATE, 4, 2);
+        tileTable[4][3] = Tile.createTileForType(TileType.IRON_GATE, 4, 3, TreasureType.EARTH);
+        tileTable[4][4] = Tile.createTileForType(TileType.FOOLS_LANDING, 4, 4);
+
+        // 第六行（2个板块）
+        tileTable[5][2] = Tile.createTileForType(TileType.TWILIGHT_HOLLOW, 5, 2);
+        tileTable[5][3] = Tile.createTileForType(TileType.WATCHTOWER, 5, 3);
     }
 
     /**
@@ -175,7 +199,7 @@ public class Board {
     }
 
     /**
-     * 获取一个Tile的相邻Tile（上下左右）
+     * 获取与指定瓦片相邻的所有瓦片（上下左右）
      */
     public List<Tile> getAdjacentTiles(Tile tile) {
         List<Tile> adjacentTiles = new ArrayList<>();
@@ -198,8 +222,77 @@ public class Board {
         if (col < cols-1 && tileTable[row][col+1] != null) {
             adjacentTiles.add(tileTable[row][col+1]);
         }
-
         return adjacentTiles;
+    }
+
+    /**
+     * 获取与指定瓦片相邻的所有瓦片（包括对角线）
+     */
+    public List<Tile> getDiagonalAndOrthogonalTiles(Tile tile) {
+        List<Tile> allTiles = new ArrayList<>();
+        int row = tile.getRow();
+        int col = tile.getCol();
+
+        // 遍历3x3范围内的所有格子（除了中心点自己）
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (i == 0 && j == 0) continue; // 跳过中心点
+
+                int newRow = row + i;
+                int newCol = col + j;
+
+                if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols
+                        && tileTable[newRow][newCol] != null) {
+                    allTiles.add(tileTable[newRow][newCol]);
+                }
+            }
+        }
+        return allTiles;
+    }
+
+    /**
+     * 获取所有可到达的瓦片（用于潜水员）
+     */
+    public List<Tile> getReachableTilesForDiver(Tile startTile) {
+        List<Tile> reachableTiles = new ArrayList<>();
+        Set<Tile> visited = new HashSet<>();
+        Queue<Tile> queue = new LinkedList<>();
+
+        queue.add(startTile);
+        visited.add(startTile);
+
+        while (!queue.isEmpty()) {
+            Tile current = queue.poll();
+
+            for (Tile adjacent : getAdjacentTiles(current)) {
+                if (!visited.contains(adjacent)) {
+                    if (adjacent.isNavigable() || adjacent.isFlooded() || adjacent.isSunk()) {
+                        reachableTiles.add(adjacent);
+                        // 如果是被淹没或沉没的瓦片，继续搜索
+                        if (adjacent.isFlooded() || adjacent.isSunk()) {
+                            queue.add(adjacent);
+                        }
+                    }
+                    visited.add(adjacent);
+                }
+            }
+        }
+        return reachableTiles;
+    }
+
+    /**
+     * 获取所有未沉没的瓦片（用于飞行员）
+     */
+    public List<Tile> getAllNavigableTiles() {
+        List<Tile> navigableTiles = new ArrayList<>();
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (tileTable[i][j] != null && tileTable[i][j].isNavigable()) {
+                    navigableTiles.add(tileTable[i][j]);
+                }
+            }
+        }
+        return navigableTiles;
     }
 
     /**
@@ -229,6 +322,59 @@ public class Board {
             }
             System.out.println();
         }
+    }
+
+    /**
+     * 获取指定宝藏类型的所有板块
+     */
+    public List<Tile> getTreasureTiles(TreasureType treasureType) {
+        List<Tile> treasureTiles = new ArrayList<>();
+        for (Tile tile : getAllTiles()) {
+            if (tile.getTreasure() == treasureType) {
+                treasureTiles.add(tile);
+            }
+        }
+        return treasureTiles;
+    }
+
+    /**
+     * 检查是否可以在指定板块获取宝藏
+     */
+    public boolean canCaptureTreasure(Tile tile, Player player) {
+        if (tile == null || tile.getTreasure() == TreasureType.NONE || tile.isSunk()) {
+            return false;
+        }
+
+        // 检查玩家是否在该板块上
+        if (player.getCurrentTile() != tile) {
+            return false;
+        }
+
+        // 计算玩家手中对应类型的宝藏卡数量
+        int treasureCardCount = 0;
+        for (Card card : player.getHand()) {
+            if (card instanceof TreasureCard) {
+                TreasureCard treasureCard = (TreasureCard) card;
+                if (treasureCard.getTreasureType() == tile.getTreasure()) {
+                    treasureCardCount++;
+                }
+            }
+        }
+
+        // 需要4张相同类型的宝藏卡
+        return treasureCardCount >= 4;
+    }
+
+    /**
+     * 检查指定宝藏是否还可以获得（是否有未沉没的宝藏板块）
+     */
+    public boolean isTreasureAvailable(TreasureType treasureType) {
+        for (Tile tile : getTreasureTiles(treasureType)) {
+            if (!tile.isSunk()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

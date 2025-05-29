@@ -1,82 +1,104 @@
 package view.gamePanel;
 
 import model.Player;
+import model.enums.Role;
 
 import javax.swing.*;
 import java.awt.*;
-
 import java.util.List;
 
 public class PlayerInfoPanel extends JPanel {
-
-    private java.util.Set<String> lastTreasures = new java.util.HashSet<>();
+    private static final Color ACTIVE_PLAYER_COLOR = new Color(230, 230, 250); // 淡紫色背景
+    private static final int PLAYER_PANEL_HEIGHT = 120; // 增加玩家面板高度以容纳更多信息
 
     public PlayerInfoPanel() {
-        setPreferredSize(new Dimension(300, 600));
-        setBackground(Color.WHITE);  // 临时背景色
+        setPreferredSize(new Dimension(250, 600));
+        setBackground(new Color(245, 245, 245)); // 浅灰色背景
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
 
-        addPlayerInfos();
-    }
-
-    /**
-     * 添加玩家信息组件
-     */
-    private void addPlayerInfos() {
-        // TODO: 为每个玩家添加信息面板
-        add(new JLabel("Player 1"));
-        add(new JLabel("Player 2"));
-        // ... 添加更多玩家
+        // 添加标题
+        JLabel titleLabel = new JLabel("玩家信息");
+        titleLabel.setFont(new Font("微软雅黑", Font.BOLD, 16));
+        titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        add(titleLabel);
+        add(Box.createVerticalStrut(10));
     }
 
     public void updatePlayerInfos(List<Player> players, int currentIdx) {
-        this.removeAll();
+        // 保留标题
+        Component titleLabel = getComponent(0);
+        Component strut = getComponent(1);
+        removeAll();
+        add(titleLabel);
+        add(strut);
+
         for (int i = 0; i < players.size(); i++) {
             Player p = players.get(i);
-            StringBuilder info = new StringBuilder();
-            info.append("Player ").append(p.getPlayerId());
-            info.append(" | 职业: ").append(p.getRole());
-            info.append(" | 剩余行动: ").append(p.getRemainingActions());
-            info.append(" | 手牌: ").append(p.getHand().size());
-            if (p.getCurrentTile() != null) {
-                info.append(" | 位置: ").append(p.getCurrentTile().getType().getDisplayName());
-            }
-            JLabel label = new JLabel(info.toString());
-            if (i == currentIdx) {
-                label.setFont(label.getFont().deriveFont(Font.BOLD));
-                label.setForeground(Color.BLUE);
-            }
-            this.add(label);
-            // 展示手牌内容
-            JPanel handPanel = new JPanel();
-            handPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-            for (model.card.Card card : p.getHand()) {
-                JLabel cardLabel = new JLabel(card.getName());
-                cardLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
-                handPanel.add(cardLabel);
-            }
-            this.add(handPanel);
-        }
-        this.revalidate();
-        this.repaint();
-    }
+            boolean isCurrentPlayer = (i == currentIdx);
 
-    public void updateCollectedTreasures(java.util.Set<model.enums.TreasureType> treasures) {
-        lastTreasures.clear();
-        for (model.enums.TreasureType t : treasures) {
-            if (t != model.enums.TreasureType.NONE) lastTreasures.add(t.getDisplayName());
+            // 创建玩家信息面板
+            JPanel playerPanel = createPlayerInfoPanel(p, isCurrentPlayer);
+            add(playerPanel);
+            add(Box.createVerticalStrut(10)); // 面板之间的间距
         }
+
+        revalidate();
         repaint();
     }
 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        if (!lastTreasures.isEmpty()) {
-            g.setColor(Color.ORANGE);
-            g.setFont(new Font("Arial", Font.BOLD, 16));
-            g.drawString("已收集宝藏: " + String.join(", ", lastTreasures), 10, 20);
-        }
-    }
+    private JPanel createPlayerInfoPanel(Player player, boolean isCurrentPlayer) {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setBackground(isCurrentPlayer ? ACTIVE_PLAYER_COLOR : Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(Color.GRAY),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)
+        ));
+        panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, PLAYER_PANEL_HEIGHT));
+        panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
+        // 玩家ID和当前状态
+        JLabel nameLabel = new JLabel(String.format("玩家 %d %s",
+                player.getPlayerId(),
+                isCurrentPlayer ? "（行动中）" : ""));
+        nameLabel.setFont(new Font("微软雅黑", isCurrentPlayer ? Font.BOLD : Font.PLAIN, 14));
+        nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // 角色信息
+        JLabel roleLabel = new JLabel(String.format("角色：%s",
+                player.getRole() != null ? player.getRole().getDisplayName() : "未分配"));
+        roleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // 当前位置
+        JLabel locationLabel = new JLabel(String.format("位置：%s",
+                player.getCurrentTile() != null ? player.getCurrentTile().getType().getDisplayName() : "未知"));
+        locationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // 剩余行动点数（仅显示当前玩家的）
+        if (isCurrentPlayer) {
+            JLabel actionLabel = new JLabel(String.format("剩余行动点：%d", player.getRemainingActions()));
+            actionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+            actionLabel.setForeground(new Color(0, 100, 0)); // 深绿色
+            panel.add(actionLabel);
+
+        }
+        // 手牌数量
+        JLabel handLabel = new JLabel(String.format("手牌数量：%d", player.getHand().size()));
+        handLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        // 添加所有标签
+        panel.add(nameLabel);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(roleLabel);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(locationLabel);
+        panel.add(Box.createVerticalStrut(5));
+        panel.add(handLabel);
+
+        return panel;
+    }
 }

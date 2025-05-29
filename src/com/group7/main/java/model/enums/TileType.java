@@ -1,6 +1,7 @@
 package model.enums;
 
 public enum TileType {
+    NONE("无"),
     FOOLS_LANDING("愚者着陆点"),
     BRONZE_GATE("青铜门"),
     COPPER_GATE("铜门"),

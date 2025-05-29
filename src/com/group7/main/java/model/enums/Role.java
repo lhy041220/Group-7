@@ -3,96 +3,168 @@ package model.enums;
 import model.Tile;  
 import model.Player;
 import model.Game;
+import model.RoleAbility;
+import model.card.TreasureCard;
+import view.dialog.RoleActionDialog;
+import javax.swing.*;
 import java.util.List;
 
-public enum Role {  
-    PILOT {  
+public enum Role implements RoleAbility {
+
+        PILOT("飞行员") {
         @Override  
-        public void useSpecialAbility(Player player, Tile destinationTile) {  
-            // 飞行员特殊能力：一回合一次，可以飞行到任意板块
+        public void useSpecialAbility(Player player, Tile destinationTile) {
+            // 飞行员特殊能力：可以飞到任意板块（每回合限用一次）
             if (destinationTile != null && destinationTile.isNavigable()) {
                 player.moveToTile(destinationTile);
             }
         }  
-    },  
-    ENGINEER {  
+    },
+
+    ENGINEER("工程师"){
         @Override  
-        public void useSpecialAbility(Player player, Tile destinationTile) {  
-            // 工程师特殊能力：可以用一个行动点翻转两个淹水板块
+        public void useSpecialAbility(Player player, Tile destinationTile) {
             if (destinationTile != null && destinationTile.isFlooded()) {
-                destinationTile.shoreUp();
-                
-                // 工程师可额外翻转一个板块，但需要玩家再次选择
-                // 注意：这里简化处理，实际游戏中需要UI交互让玩家选择第二个板块
-                // 此处逻辑仅作示范，完整实现需要与UI交互
+                Game game = Game.getInstance();
+                game.getBoard().dryTile(destinationTile);
+
+                // 打开对话框选择第二个要排水的板块
+                SwingUtilities.invokeLater(() -> {
+                    JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(game.getMainFrame());
+                    RoleActionDialog dialog = new RoleActionDialog(frame, player, new RoleActionDialog.ActionListener() {
+                        @Override
+                        public void onTileSelected(Tile secondTile) {
+                            if (secondTile != null && secondTile.isFlooded()) {
+                                game.getBoard().dryTile(secondTile);
+                            }
+                        }
+
+                        @Override
+                        public void onPlayerSelected(Player targetPlayer) {}
+
+                        @Override
+                        public void onCardSelected(TreasureCard card) {}
+
+                        @Override
+                        public void onActionCancelled() {}
+                    });
+                    dialog.setVisible(true);
+                });
             }
         }  
-    },  
-    NAVIGATOR {  
+    },
+
+    NAVIGATOR("领航员") {
         @Override  
-        public void useSpecialAbility(Player player, Tile destinationTile) {  
-            // 领航员特殊能力：可以移动另一名玩家1或2格
+        public void useSpecialAbility(Player player, Tile destinationTile) {
+            // 领航员特殊能力：可以移动其他玩家最多两格
+            // 注意：这里需要UI交互来选择目标玩家和移动位置
             Game game = Game.getInstance();
-            List<Player> players = game.getPlayers();
-            
-            // 这里简化处理，实际游戏中需要UI交互让玩家选择要移动的玩家和目标板块
-            // 搜索除当前玩家外的其他玩家
-            for (Player otherPlayer : players) {
-                if (otherPlayer != player && destinationTile != null && destinationTile.isNavigable()) {
-                    // 可以移动其他玩家到目标板块（实际游戏中需要检查是否在1-2步范围内）
-                    otherPlayer.moveToTile(destinationTile);
-                    break;
-                }
-            }
-        }  
-    },  
-    DIVER {  
+
+            SwingUtilities.invokeLater(() -> {
+                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(game.getMainFrame());
+                RoleActionDialog dialog = new RoleActionDialog(frame, player, new RoleActionDialog.ActionListener() {
+                    @Override
+                    public void onTileSelected(Tile tile) {}
+
+                    @Override
+                    public void onPlayerSelected(Player targetPlayer) {
+                        if (targetPlayer != null && destinationTile != null) {
+                            targetPlayer.moveToTile(destinationTile);
+                        }
+                    }
+
+                    @Override
+                    public void onCardSelected(TreasureCard card) {}
+
+                    @Override
+                    public void onActionCancelled() {}
+                });
+                dialog.setVisible(true);
+            });
+        }
+    },
+
+    DIVER("潜水员") {
         @Override  
-        public void useSpecialAbility(Player player, Tile destinationTile) {  
-            // 潜水员特殊能力：可以穿过一个或多个相邻的已沉没或已淹没板块移动
-            if (destinationTile != null && destinationTile.isNavigable()) {
-                // 潜水员可以通过已沉没的板块到达目标
-                // 实际游戏中需要路径验证算法检查从当前位置是否可以通过沉没板块到达目标
-                player.moveToTile(destinationTile);
-            }
-        }  
-    },  
-    MESSENGER {  
-        @Override  
-        public void useSpecialAbility(Player player, Tile destinationTile) {  
-            // 信使特殊能力：可以在不相邻的情况下将宝藏卡给予其他玩家
-            Game game = Game.getInstance();
-            List<Player> players = game.getPlayers();
-            
-            // 这里简化处理，实际游戏中需要UI交互让玩家选择要给予的卡牌和目标玩家
-            // 信使可以跨距离交换卡牌，所以不需要检查位置是否相邻
-            // 具体的卡牌交换逻辑需要在UI层实现
-        }  
-    },  
-    EXPLORER {  
-        @Override  
-        public void useSpecialAbility(Player player, Tile destinationTile) {  
-            // 探险家特殊能力：可以对角线移动或对角线翻转
-            // 在游戏中，通常移动和翻转只能在正交方向（上下左右）进行
-            // 探险家可以额外在对角线方向移动或翻转
-            
+        public void useSpecialAbility(Player player, Tile destinationTile) {
+            // 潜水员特殊能力：可以穿过任意数量的相邻的被淹没或沉没的板块
             if (destinationTile != null) {
-                // 检查目标板块是否为对角线方向（实际游戏需要有具体的坐标计算）
-                int rowDiff = Math.abs(player.getCurrentTile().getRow() - destinationTile.getRow());
-                int colDiff = Math.abs(player.getCurrentTile().getCol() - destinationTile.getCol());
-                
-                // 对角线移动（行差和列差都为1）
-                if (rowDiff == 1 && colDiff == 1 && destinationTile.isNavigable()) {
+                Game game = Game.getInstance();
+                List<Tile> reachableTiles = game.getBoard().getReachableTilesForDiver(player.getCurrentTile());
+
+                if (reachableTiles.contains(destinationTile)) {
                     player.moveToTile(destinationTile);
                 }
-                // 对角线翻转
-                else if (rowDiff == 1 && colDiff == 1 && destinationTile.isFlooded()) {
-                    destinationTile.shoreUp();
-                }
             }
         }  
-    };  
+    },
 
-    public abstract void useSpecialAbility(Player player, Tile destinationTile);  
+    MESSENGER("信使") {
+        @Override  
+        public void useSpecialAbility(Player player, Tile destinationTile) {
+            // 信使特殊能力：可以在任意位置将宝藏卡给其他玩家
+            Game game = Game.getInstance();
+            // 打开对话框选择玩家和卡牌
+            SwingUtilities.invokeLater(() -> {
+                JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(game.getMainFrame());
+                RoleActionDialog dialog = new RoleActionDialog(frame, player, new RoleActionDialog.ActionListener() {
+                    private Player selectedPlayer;
+
+                    @Override
+                    public void onTileSelected(Tile tile) {}
+
+                    @Override
+                    public void onPlayerSelected(Player targetPlayer) {
+                        this.selectedPlayer = targetPlayer;
+                    }
+
+                    @Override
+                    public void onCardSelected(TreasureCard card) {
+                        if (selectedPlayer != null && card != null) {
+                            player.giveCardToPlayer(selectedPlayer, card);
+                        }
+                    }
+
+                    @Override
+                    public void onActionCancelled() {}
+                });
+                dialog.setVisible(true);
+            });
+        }
+    },
+
+    EXPLORER("探险家") {
+        @Override
+        public void useSpecialAbility(Player player, Tile destinationTile) {
+            // 探险家特殊能力：可以斜向移动，并且可以斜向排水
+        // 探险家特殊能力：可以斜向移动，并且可以斜向排水
+            if (destinationTile != null) {
+                Game game = Game.getInstance();
+                List<Tile> reachableTiles = game.getBoard().getDiagonalAndOrthogonalTiles(player.getCurrentTile());
+
+                if (reachableTiles.contains(destinationTile)) {
+                    if (destinationTile.isFlooded()) {
+                        // 如果目标板块是被淹没的，进行排水
+                        game.getBoard().dryTile(destinationTile);
+                    } else {
+                        // 否则移动到目标板块
+                        player.moveToTile(destinationTile);
+                    }
+                }
+            }
+        }
+    };
+
+    private final String displayName;
+
+    Role(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
 }  
 
