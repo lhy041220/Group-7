@@ -6,12 +6,14 @@ import model.card.Card;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import model.card.SpecialCard;
 
 public class CardPanel extends JPanel {
 
     private JPanel treasureCardPanel;
     private JPanel floodCardPanel;
     private JPanel playerHandPanel;
+    private MainFrame mainFrame;
 
     public CardPanel() {
         setPreferredSize(new Dimension(1500, 150));
@@ -50,6 +52,8 @@ public class CardPanel extends JPanel {
         add(playerHandPanel, BorderLayout.CENTER);
     }
 
+    public void setMainFrame(MainFrame mainFrame) { this.mainFrame = mainFrame; }
+
     /**
      * 更新玩家手牌显示（新版，支持Card对象列表）
      */
@@ -62,8 +66,11 @@ public class CardPanel extends JPanel {
             cardLabel.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    System.out.println("点击了手牌：" + card.getName());
-                    // 后续可联动GameController实现用卡
+                    if (card instanceof SpecialCard && mainFrame != null) {
+                        mainFrame.handleSpecialCardClick((SpecialCard) card);
+                    } else {
+                        System.out.println("点击了手牌：" + card.getName());
+                    }
                 }
             });
             playerHandPanel.add(cardLabel);

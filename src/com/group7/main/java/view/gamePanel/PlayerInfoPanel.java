@@ -9,6 +9,8 @@ import java.util.List;
 
 public class PlayerInfoPanel extends JPanel {
 
+    private java.util.Set<String> lastTreasures = new java.util.HashSet<>();
+
     public PlayerInfoPanel() {
         setPreferredSize(new Dimension(300, 600));
         setBackground(Color.WHITE);  // 临时背景色
@@ -57,6 +59,24 @@ public class PlayerInfoPanel extends JPanel {
         }
         this.revalidate();
         this.repaint();
+    }
+
+    public void updateCollectedTreasures(java.util.Set<model.enums.TreasureType> treasures) {
+        lastTreasures.clear();
+        for (model.enums.TreasureType t : treasures) {
+            if (t != model.enums.TreasureType.NONE) lastTreasures.add(t.getDisplayName());
+        }
+        repaint();
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        if (!lastTreasures.isEmpty()) {
+            g.setColor(Color.ORANGE);
+            g.setFont(new Font("Arial", Font.BOLD, 16));
+            g.drawString("已收集宝藏: " + String.join(", ", lastTreasures), 10, 20);
+        }
     }
 
 }

@@ -31,8 +31,31 @@ public class GameBoardPanel extends JPanel {
         void onTileClicked(int row, int col);
     }
 
-
-
+    private java.util.Set<String> highlightedTiles = new java.util.HashSet<>();
+    public void highlightTiles(java.util.List<int[]> positions) {
+        highlightedTiles.clear();
+        for (int[] pos : positions) {
+            highlightedTiles.add(pos[0] + "," + pos[1]);
+        }
+        updateBoardHighlight();
+    }
+    public void clearHighlight() {
+        highlightedTiles.clear();
+        updateBoardHighlight();
+    }
+    private void updateBoardHighlight() {
+        for (int row = 0; row < GRID_SIZE; row++) {
+            for (int col = 0; col < GRID_SIZE; col++) {
+                JPanel tilePanel = tilePanels[row][col];
+                if (highlightedTiles.contains(row + "," + col)) {
+                    tilePanel.setBorder(BorderFactory.createLineBorder(Color.RED, 3));
+                } else {
+                    tilePanel.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
+                }
+            }
+        }
+        repaint();
+    }
 
     public GameBoardPanel() {
         this.tilePanels = new JPanel[GRID_SIZE][GRID_SIZE];
@@ -95,6 +118,7 @@ public class GameBoardPanel extends JPanel {
                 }
             }
         }
+        updateBoardHighlight();
         revalidate();
         repaint();
     }

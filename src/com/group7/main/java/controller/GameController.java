@@ -14,6 +14,9 @@ public class GameController {
     private Game game;
     private MainFrame mainFrame;
 
+    public enum OperationMode { NONE, MOVE, SHORE_UP, SPECIAL_ABILITY, USE_CARD, NAVIGATOR_SELECT_PLAYER, NAVIGATOR_SELECT_TILE }
+    private OperationMode currentMode = OperationMode.NONE;
+    private int navigatorTargetPlayerIdx = -1;
 
     public GameController(Game game, MainFrame mainFrame) {
         // 默认构造函数
@@ -29,9 +32,9 @@ public class GameController {
         }
     }
 
-    public void startGame() {
+    public void startGame(int numPlayers) {
         if (game != null && mainFrame != null) {
-            game.startGame(getPlayerNum());
+            game.startGame(numPlayers);
             mainFrame.updateBoard(game.getBoard());
             mainFrame.updatePlayerHand(game.getCurrentPlayer().getHand());
             // 通知回合开始
@@ -115,6 +118,26 @@ public class GameController {
         } else {
             mainFrame.addConsoleMessage("剩余行动：" + player.getRemainingActions());
         }
+        // 检查手牌超限
+        if (player.handExceedsLimit()) {
+            // 弹窗选择丢弃卡牌
+            java.util.List<model.card.Card> hand = player.getHand();
+            String[] options = new String[hand.size()];
+            for (int i = 0; i < hand.size(); i++) {
+                options[i] = hand.get(i).getName();
+            }
+            String discard = (String) javax.swing.JOptionPane.showInputDialog(null, "手牌超限，请选择要丢弃的卡牌：", "丢弃卡牌", javax.swing.JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            if (discard != null) {
+                for (model.card.Card card : hand) {
+                    if (card.getName().equals(discard)) {
+                        player.discardCard(card);
+                        mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + "丢弃了卡牌：" + card.getName());
+                        break;
+                    }
+                }
+                mainFrame.updatePlayerHand(player.getHand());
+            }
+        }
         mainFrame.updatePlayerHand(player.getHand());
     }
 
@@ -190,6 +213,7 @@ public class GameController {
         mainFrame.addConsoleMessage("轮到玩家 " + curr.getPlayerId());
         updateAllUI();
         mainFrame.updatePlayerHand(curr.getHand());
+        highlightMovableTiles();
     }
 
     // 结束玩家回合（如由按钮控制）
@@ -208,6 +232,16 @@ public class GameController {
             game.setGameState(GameState.LOST);
             JOptionPane.showMessageDialog(mainFrame, "游戏失败！ " + reason);
         }
+        int res = JOptionPane.showConfirmDialog(mainFrame, "是否重新开始新游戏？", "重新开始", JOptionPane.YES_NO_OPTION);
+        if (res == JOptionPane.YES_OPTION) {
+            // 重新启动
+            String[] options = {"2", "3", "4"};
+            String numStr = (String) JOptionPane.showInputDialog(null, "请选择玩家人数：", "玩家人数", JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+            int playerNum = 3;
+            try { if (numStr != null) playerNum = Integer.parseInt(numStr); } catch (Exception e) {}
+            game.startGame(playerNum);
+            updateAllUI();
+        }
     }
 
     // 刷新所有与UI相关内容
@@ -216,6 +250,7 @@ public class GameController {
         mainFrame.updateWaterLevel(game.getWaterLevel().getCurrentLevel());
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
         mainFrame.updatePlayerHand(game.getCurrentPlayer().getHand());
+        mainFrame.getPlayerInfoPanel().updateCollectedTreasures(game.getCollectedTreasures());
         // 动态设置按钮可用性
         ControlPanel controlPanel = mainFrame.getControlPanel();
         // 这里只做简单示例，实际可根据TurnManager阶段更细致控制
@@ -239,5 +274,158 @@ public class GameController {
             mainFrame.addConsoleMessage("Failed to collect treasure: Requires 4 corresponding treasure cards in the treasure tile and the treasure has not been collected.");
         }
         mainFrame.updatePlayerHand(player.getHand());
+    }
+
+    // 处理直升机卡
+    public void handlePlayerUseHelicopterLift(model.card.SpecialCard card, int row, int col) {
+        Player player = game.getCurrentPlayer();
+        model.Board board = game.getBoard();
+        model.Tile dest = null;
+        try { dest = board.getTile(row, col); } catch (Exception e) {}
+        if (dest != null && dest.isNavigable()) {
+            // 简化：只移动当前玩家，实际可扩展为多人
+            player.setCurrentTile(dest);
+            player.discardCard(card);
+            mainFrame.addConsoleMessage("使用直升机卡，玩家" + player.getPlayerId() + "移动到(" + row + "," + col + ")");
+            mainFrame.updateBoard(game.getBoard());
+            mainFrame.updatePlayerHand(player.getHand());
+            // 检查胜利条件
+            if (game.checkWinCondition()) {
+                announceGameEnd(true, "使用直升机卡，全员登船，胜利！");
+            }
+        } else {
+            mainFrame.addConsoleMessage("直升机卡目标无效或不可达");
+        }
+    }
+    // 处理沙袋卡
+    public void handlePlayerUseSandbag(model.card.SpecialCard card, int row, int col) {
+        model.Board board = game.getBoard();
+        model.Tile dest = null;
+        try { dest = board.getTile(row, col); } catch (Exception e) {}
+        if (dest != null && dest.isFlooded()) {
+            dest.shoreUp();
+            game.getCurrentPlayer().discardCard(card);
+            mainFrame.addConsoleMessage("使用沙袋卡，排水(" + row + "," + col + ")");
+            mainFrame.updateBoard(game.getBoard());
+            mainFrame.updatePlayerHand(game.getCurrentPlayer().getHand());
+        } else {
+            mainFrame.addConsoleMessage("沙袋卡目标无效或该格不可排水");
+        }
+    }
+
+    // 高亮可移动格子
+    public void highlightMovableTiles() {
+        Player player = game.getCurrentPlayer();
+        model.Board board = game.getBoard();
+        java.util.List<model.Tile> moves = player.getPossibleMoves(board);
+        java.util.List<int[]> positions = new java.util.ArrayList<>();
+        for (model.Tile t : moves) {
+            positions.add(new int[]{t.getRow(), t.getCol()});
+        }
+        mainFrame.highlightBoardTiles(positions);
+    }
+    // 清除高亮
+    public void clearBoardHighlight() {
+        mainFrame.clearBoardHighlight();
+    }
+
+    // 高亮可排水格子
+    public void highlightShoreUpTiles() {
+        Player player = game.getCurrentPlayer();
+        model.Board board = game.getBoard();
+        java.util.List<model.Tile> shoreUps = player.getPossibleShoreUps(board);
+        java.util.List<int[]> positions = new java.util.ArrayList<>();
+        for (model.Tile t : shoreUps) {
+            positions.add(new int[]{t.getRow(), t.getCol()});
+        }
+        mainFrame.highlightBoardTiles(positions);
+    }
+    // 进入排水模式
+    public void enterShoreUpMode() {
+        currentMode = OperationMode.SHORE_UP;
+        highlightShoreUpTiles();
+    }
+    // 进入移动模式
+    public void enterMoveMode() {
+        currentMode = OperationMode.MOVE;
+        highlightMovableTiles();
+    }
+    // 进入领航员移动他人模式
+    public void enterNavigatorMode() {
+        currentMode = OperationMode.NAVIGATOR_SELECT_PLAYER;
+        mainFrame.addConsoleMessage("请选择要移动的目标玩家");
+        // 可在UI高亮其他玩家
+    }
+    // 高亮目标玩家可移动格
+    public void highlightNavigatorTargetTiles(Player target) {
+        java.util.List<model.Tile> moves = target.getPossibleMoves(game.getBoard());
+        java.util.List<int[]> positions = new java.util.ArrayList<>();
+        for (model.Tile t : moves) {
+            positions.add(new int[]{t.getRow(), t.getCol()});
+        }
+        mainFrame.highlightBoardTiles(positions);
+    }
+    // 处理地图点击
+    public void handleTileClick(int row, int col) {
+        if (currentMode == OperationMode.NAVIGATOR_SELECT_PLAYER) {
+            // 判断是否点击了某玩家所在格
+            for (int i = 0; i < game.getPlayers().size(); i++) {
+                Player p = game.getPlayers().get(i);
+                if (p != game.getCurrentPlayer() && p.getCurrentTile() != null && p.getCurrentTile().getRow() == row && p.getCurrentTile().getCol() == col) {
+                    navigatorTargetPlayerIdx = i;
+                    currentMode = OperationMode.NAVIGATOR_SELECT_TILE;
+                    highlightNavigatorTargetTiles(p);
+                    mainFrame.addConsoleMessage("请选择目标格子");
+                    return;
+                }
+            }
+        } else if (currentMode == OperationMode.NAVIGATOR_SELECT_TILE) {
+            if (navigatorTargetPlayerIdx >= 0) {
+                Player target = game.getPlayers().get(navigatorTargetPlayerIdx);
+                java.util.List<int[]> highlights = new java.util.ArrayList<>();
+                for (model.Tile t : target.getPossibleMoves(game.getBoard())) {
+                    highlights.add(new int[]{t.getRow(), t.getCol()});
+                }
+                for (int[] pos : highlights) {
+                    if (pos[0] == row && pos[1] == col) {
+                        model.Tile dest = game.getBoard().getTile(row, col);
+                        target.moveToTile(dest);
+                        mainFrame.addConsoleMessage("领航员将玩家" + target.getPlayerId() + "移动到(" + row + "," + col + ")");
+                        mainFrame.updateBoard(game.getBoard());
+                        clearBoardHighlight();
+                        currentMode = OperationMode.NONE;
+                        navigatorTargetPlayerIdx = -1;
+                        return;
+                    }
+                }
+            }
+        } else if (currentMode == OperationMode.MOVE) {
+            java.util.List<int[]> highlights = new java.util.ArrayList<>();
+            for (model.Tile t : game.getCurrentPlayer().getPossibleMoves(game.getBoard())) {
+                highlights.add(new int[]{t.getRow(), t.getCol()});
+            }
+            for (int[] pos : highlights) {
+                if (pos[0] == row && pos[1] == col) {
+                    model.Tile dest = game.getBoard().getTile(row, col);
+                    handlePlayerMove(dest);
+                    highlightMovableTiles();
+                    return;
+                }
+            }
+        } else if (currentMode == OperationMode.SHORE_UP) {
+            java.util.List<int[]> highlights = new java.util.ArrayList<>();
+            for (model.Tile t : game.getCurrentPlayer().getPossibleShoreUps(game.getBoard())) {
+                highlights.add(new int[]{t.getRow(), t.getCol()});
+            }
+            for (int[] pos : highlights) {
+                if (pos[0] == row && pos[1] == col) {
+                    model.Tile dest = game.getBoard().getTile(row, col);
+                    handlePlayerShoreUp(dest);
+                    highlightShoreUpTiles();
+                    return;
+                }
+            }
+        }
+        // 其他模式可扩展
     }
 }

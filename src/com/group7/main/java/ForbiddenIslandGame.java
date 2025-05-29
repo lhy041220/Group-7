@@ -11,7 +11,12 @@ public class ForbiddenIslandGame {
         GameController gameController = new GameController(game, mainFrame);
 
         gameController.initializeViewFrame();
-        gameController.startGame();
+        // 游戏启动时选择玩家人数
+        String[] options = {"2", "3", "4"};
+        String numStr = (String) javax.swing.JOptionPane.showInputDialog(null, "请选择玩家人数：", "玩家人数", javax.swing.JOptionPane.PLAIN_MESSAGE, null, options, options[0]);
+        int playerNum = 3;
+        try { if (numStr != null) playerNum = Integer.parseInt(numStr); } catch (Exception e) {}
+        gameController.startGame(playerNum);
 
         mainFrame.onCollectTreasureButtonClick.addListener(sender -> {
             gameController.handleCollectTreasure();
@@ -23,8 +28,23 @@ public class ForbiddenIslandGame {
         });
 
         mainFrame.setTileClickEvent((row, col) -> {
-            System.out.println("点击了地图格子：(" + row + ", " + col + ")");
-            // 后续可联动GameController.handlePlayerMove等方法
+            gameController.handleTileClick(row, col);
         });
+
+        mainFrame.getCardPanel().setMainFrame(mainFrame);
+        mainFrame.setSpecialCardCallback(new MainFrame.SpecialCardCallback() {
+            @Override
+            public void onHelicopterLift(model.card.SpecialCard card, int row, int col) {
+                gameController.handlePlayerUseHelicopterLift(card, row, col);
+            }
+            @Override
+            public void onSandbag(model.card.SpecialCard card, int row, int col) {
+                gameController.handlePlayerUseSandbag(card, row, col);
+            }
+        });
+
+        mainFrame.setShoreUpCallback(() -> gameController.enterShoreUpMode());
+
+        mainFrame.setSpecialAbilityCallback(() -> gameController.enterNavigatorMode());
     }
 }
