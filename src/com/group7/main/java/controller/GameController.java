@@ -70,8 +70,24 @@ public class GameController {
     // 使用特殊卡
     public void handlePlayerUseCard(SpecialCard card) {
         Player player = game.getCurrentPlayer();
-        player.useSpecialCard(card);
-        mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊卡: " + card.getName());
+        if (card instanceof model.card.HelicopterLiftCard) {
+            // 直升机卡：理论上应弹窗选择玩家和目标格子，这里先输出提示
+            mainFrame.addConsoleMessage("使用直升机卡：请选择要移动的玩家和目标格子。");
+            // 示例：如果所有玩家都在愚者着陆点且已集齐四宝，直接胜利
+            if (game.checkWinCondition()) {
+                announceGameEnd(true, "使用直升机卡，全员登船，胜利！");
+                return;
+            }
+            // 其他情况可后续联动UI实现多人移动
+        } else if (card instanceof model.card.SandbagCard) {
+            // 沙袋卡：理论上应弹窗选择目标格子，这里先输出提示
+            mainFrame.addConsoleMessage("使用沙袋卡：请选择要排水的格子。");
+            // 后续可联动UI让玩家点选格子
+        } else {
+            // 其他特殊卡
+            player.useSpecialCard(card);
+            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊卡: " + card.getName());
+        }
         // 特殊卡用完记得检查是否要立刻进入下一步
         checkAfterPlayerAction(player);
     }
