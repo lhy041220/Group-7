@@ -5,6 +5,7 @@ import lombok.Setter;
 import model.card.*;
 import model.enums.Role; 
 import model.enums.TileState;
+import model.enums.TreasureType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -515,6 +516,18 @@ public class Player {
         // 使用并丢弃卡牌
         hand.remove(card);
         return true;
+    }
+
+    public boolean hasCollectedTreasure(TreasureType treasureType) {
+        for (Card card : hand) {
+            if (card instanceof model.card.TreasureCard) {
+                model.card.TreasureCard treasureCard = (model.card.TreasureCard) card;
+                if (treasureCard.getTreasureType() == treasureType) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
 
