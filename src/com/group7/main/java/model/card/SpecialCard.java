@@ -3,6 +3,7 @@ package model.card;
 import model.Player;
 import model.enums.CardType;
 import model.Game;
+import model.Tile;
 
 public abstract class SpecialCard extends HandCard {
     protected boolean canBeUsedAnytime = true;  // 默认特殊卡可以随时使用
@@ -54,6 +55,10 @@ public abstract class SpecialCard extends HandCard {
         Game.getInstance().getTreasureDeck().discard(this);
 
         return true;
+    }
+
+    public boolean use(Player player, Tile targetTile) {
+        return use(player);
     }
 
     public abstract void useCard(Player player);

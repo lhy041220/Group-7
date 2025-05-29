@@ -31,7 +31,6 @@ public class ForbiddenIslandGame {
             gameController.handleTileClick(row, col);
         });
 
-        mainFrame.getCardPanel().setMainFrame(mainFrame);
         mainFrame.setSpecialCardCallback(new MainFrame.SpecialCardCallback() {
             @Override
             public void onHelicopterLift(model.card.SpecialCard card, int row, int col) {

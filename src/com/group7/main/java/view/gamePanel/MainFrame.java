@@ -19,6 +19,8 @@ public class MainFrame extends JFrame {
     public final Event onGiveCardButtonClick;
     public final Event onCaptureTreasureButtonClick;
     public final Event onEndTurnButtonClick;
+    public final Event onCollectTreasureButtonClick;
+    public final Event onUseSpecialAbilityButtonClick;
 
     private GameBoardPanel gameBoardPanel;
     @Getter
@@ -38,6 +40,8 @@ public class MainFrame extends JFrame {
         onGiveCardButtonClick = new Event();
         onCaptureTreasureButtonClick = new Event();
         onEndTurnButtonClick = new Event();
+        onCollectTreasureButtonClick = new Event();
+        onUseSpecialAbilityButtonClick = new Event();
 
         initComponents();
         addComponents();
@@ -164,6 +168,33 @@ public class MainFrame extends JFrame {
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
         dialog.setVisible(true);
+    }
+
+    public void setTileClickEvent(GameBoardPanel.TileClickListener listener) {
+        gameBoardPanel.setTileClickListener(listener);
+    }
+
+    public CardPanel getCardPanel() {
+        return cardPanel;
+    }
+
+    public interface SpecialCardCallback {
+        void onHelicopterLift(model.card.SpecialCard card, int row, int col);
+        void onSandbag(model.card.SpecialCard card, int row, int col);
+    }
+
+    private SpecialCardCallback specialCardCallback;
+
+    public void setSpecialCardCallback(SpecialCardCallback callback) {
+        this.specialCardCallback = callback;
+    }
+
+    public void setShoreUpCallback(Runnable callback) {
+        controlPanel.getShoreUpButton().addActionListener(e -> callback.run());
+    }
+
+    public void setSpecialAbilityCallback(Runnable callback) {
+        controlPanel.getGiveCardButton().addActionListener(e -> callback.run());
     }
 
 }

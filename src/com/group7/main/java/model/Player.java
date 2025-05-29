@@ -335,5 +335,58 @@ public class Player {
 
         return actions;
     }
+
+    /**
+     * 检查是否可以收集宝藏
+     */
+    public boolean canCollectTreasure() {
+        // 检查当前位置是否有宝藏
+        if (currentTile == null || !currentTile.hasTreasure(null)) {
+            return false;
+        }
+
+        // 检查是否有足够的宝藏卡
+        TreasureType tileType = currentTile.getTreasure();
+        int count = 0;
+        for (Card card : hand) {
+            if (card instanceof TreasureCard && ((TreasureCard) card).getTreasureType() == tileType) {
+                count++;
+            }
+        }
+        return count >= 4;
+    }
+
+    /**
+     * 收集宝藏
+     */
+    public boolean collectTreasure() {
+        if (!canCollectTreasure()) {
+            return false;
+        }
+
+        TreasureType tileType = currentTile.getTreasure();
+        List<Card> cardsToRemove = new ArrayList<>();
+        int count = 0;
+
+        // 找出要移除的宝藏卡
+        for (Card card : hand) {
+            if (card instanceof TreasureCard && ((TreasureCard) card).getTreasureType() == tileType) {
+                cardsToRemove.add(card);
+                count++;
+                if (count >= 4) {
+                    break;
+                }
+            }
+        }
+
+        // 移除宝藏卡并添加收集的宝藏
+        if (count >= 4) {
+            hand.removeAll(cardsToRemove);
+            addCollectedTreasure(tileType);
+            return true;
+        }
+
+        return false;
+    }
 }  
 

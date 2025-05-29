@@ -255,6 +255,7 @@ public class Game {
         gameState = GameState.RUNNING;
 
         // 初始化玩家list
+        players.clear(); // 清除之前的玩家
         for (int i = 0; i < numPlayers; i++) {
             Player player = new Player(i + 1, board.getTileByType(TileType.HOWLING_GARDEN));
             players.add(player);
@@ -272,12 +273,12 @@ public class Game {
         // 给玩家发初始卡牌
         dealInitialCards();
 
+        turnManager = new TurnManager(this, players);
         turnManager.startPlayerTurn();
     }
 
     /**
-     * 弹窗选择起始玩家，并调整玩家顺序
-     */
+     * 弹窗选择起始玩家，并调整玩家顺序     */
     private void selectStartingPlayer() {
         String[] playerNames = players.stream().map(p -> "玩家" + p.getPlayerId()).toArray(String[]::new);
         int startIdx = JOptionPane.showOptionDialog(
@@ -545,7 +546,10 @@ public class Game {
     }
 
     public Player getCurrentPlayer() {
-        return players.get(currentPlayerIndex);
+        if (currentPlayerIndex >= 0 && currentPlayerIndex < players.size()) {
+            return players.get(currentPlayerIndex);
+        }
+        return null;
     }
 
     /**
@@ -642,5 +646,17 @@ public class Game {
                 mainFrame.showGameOverDialog(message);
             });
         }
+    }
+
+    public Tile getTileAt(int row, int col) {
+        return board.getTileAt(row, col);
+    }
+
+    public TurnManager getTurnManager() {
+        return turnManager;
+    }
+
+    public void setTurnManager(TurnManager turnManager) {
+        this.turnManager = turnManager;
     }
 }

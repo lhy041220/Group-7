@@ -19,6 +19,8 @@ public class GameController {
         // 默认构造函数
         this.game = game;
         this.mainFrame = mainFrame;
+        // 设置Game实例的MainFrame引用
+        game.setMainFrame(mainFrame);
     }
 
     public void initializeViewFrame() {
@@ -29,9 +31,9 @@ public class GameController {
         }
     }
 
-    public void startGame() {
+    public void startGame(int playerNum) {
         if (game != null && mainFrame != null) {
-            game.startGame(getPlayerNum());
+            game.startGame(playerNum);
             mainFrame.updateBoard(game.getBoard());
             // 通知回合开始
             handleStartPlayerTurn();
@@ -116,31 +118,14 @@ public class GameController {
                 "回合阶段提示",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        boolean mustDiscard = false;
-        for (int i = 0; i < 2; i++) {
-            HandCard card = game.drawTreasureCard();
-            if (card == null) {
-                announceGameEnd(false, "宝藏牌抽光，游戏失败。");
-                return;
-            }
-            curr.addCardToHand(card);
-            mainFrame.addConsoleMessage("抽到了卡牌：" + card.getName());
-            // 特殊卡立即处理
-            if (card instanceof SpecialCard) {
-                mainFrame.addConsoleMessage("请立即处理特殊卡：" + card.getName());
-                // 你可在这里处理卡牌即时效果
-            }
-        }
+        // 抽两张宝藏卡
+        game.drawTreasureCardsForTurn(curr);
 
         // 检查手牌上限
         if (curr.handExceedsLimit()) {
-            // 让玩家丢卡，这里只打印日志，可扩展弹窗交互
-            mainFrame.addConsoleMessage("玩家"+curr.getPlayerId()+"手牌超限，请丢弃到5张。");
-            mustDiscard = true;
-            // 需配合UI完成丢弃流程，完成后进入下一阶段
-        }
-
-        if (!mustDiscard) {
+            // 通知Game处理弃牌
+            game.notifyPlayerMustDiscard(curr);
+        } else {
             handleFloodPhase();
         }
     }
@@ -223,5 +208,68 @@ public class GameController {
         mainFrame.updateWaterLevel(game.getWaterLevel().getCurrentLevel());
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
         // 可拓展：更新玩家信息面板、卡牌面板等
+    }
+
+    public void handleCollectTreasure() {
+        Player player = game.getCurrentPlayer();
+        if (player.getRemainingActions() > 0) {
+            // 检查是否可以收集宝藏
+            if (player.canCollectTreasure()) {
+                if (player.collectTreasure()) {
+                    mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 收集了宝藏");
+                    checkAfterPlayerAction(player);
+                }
+            }
+        }
+    }
+
+    public void handleUseSpecialAbility(Tile targetTile) {
+        Player player = game.getCurrentPlayer();
+        if (player.getRemainingActions() > 0) {
+            player.useSpecialAbility(targetTile);
+            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊能力");
+            checkAfterPlayerAction(player);
+        }
+    }
+
+    public void handleTileClick(int row, int col) {
+        if (game.getGameState() == model.enums.GameState.RUNNING) {
+            Tile clickedTile = game.getBoard().getTileAt(row, col);
+            if (clickedTile != null) {
+                handlePlayerMove(clickedTile);
+            }
+        }
+    }
+
+    public void handlePlayerUseHelicopterLift(model.card.SpecialCard card, int row, int col) {
+        Player player = game.getCurrentPlayer();
+        Tile targetTile = game.getBoard().getTileAt(row, col);
+        if (targetTile != null && card instanceof model.card.HelicopterLiftCard) {
+            if (((model.card.HelicopterLiftCard) card).use(player, targetTile)) {
+                mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了直升机卡移动到 " + targetTile.getType().getDisplayName());
+                checkAfterPlayerAction(player);
+            }
+        }
+    }
+
+    public void handlePlayerUseSandbag(model.card.SpecialCard card, int row, int col) {
+        Player player = game.getCurrentPlayer();
+        Tile targetTile = game.getBoard().getTileAt(row, col);
+        if (targetTile != null && card instanceof model.card.SandbagCard) {
+            if (((model.card.SandbagCard) card).use(player, targetTile)) {
+                mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了沙袋卡在 " + targetTile.getType().getDisplayName());
+                checkAfterPlayerAction(player);
+            }
+        }
+    }
+
+    public void enterShoreUpMode() {
+        game.getTurnManager().setCurrentAction(model.TurnManager.ActionType.SHORE_UP);
+        mainFrame.addConsoleMessage("进入排水模式");
+    }
+
+    public void enterNavigatorMode() {
+        game.getTurnManager().setCurrentAction(model.TurnManager.ActionType.NAVIGATOR);
+        mainFrame.addConsoleMessage("进入导航员模式");
     }
 }

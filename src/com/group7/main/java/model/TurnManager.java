@@ -20,6 +20,8 @@ public class TurnManager {
     @Getter
     private TurnPhase currentPhase;
 
+    private ActionType currentAction;
+
     public enum TurnPhase {
         ACTIONS,         // 玩家行动阶段
         DRAW_TREASURE,   // 抽取宝藏卡阶段
@@ -31,7 +33,8 @@ public class TurnManager {
         MOVE,           // 移动
         SHORE_UP,       // 加固
         GIVE_CARD,      // 给予卡牌
-        CAPTURE_TREASURE // 获取宝藏
+        CAPTURE_TREASURE, // 获取宝藏
+        NAVIGATOR       // 导航员行动
     }
 
     public TurnManager(Game game, List<Player> players) {
@@ -364,6 +367,14 @@ public class TurnManager {
     public void forceEndTurn() {
         currentPhase = TurnPhase.END;
         endTurn();
+    }
+
+    public void setCurrentAction(ActionType action) {
+        this.currentAction = action;
+    }
+
+    public ActionType getCurrentAction() {
+        return currentAction;
     }
 
 }

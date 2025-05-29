@@ -13,6 +13,7 @@ import java.util.Queue;
 import java.util.HashSet;
 import java.util.LinkedList;
 
+
 /**
  * 代表禁闭岛游戏板
  */
@@ -375,6 +376,16 @@ public class Board {
             }
         }
         return false;
+    }
+
+    /**
+     * 根据行列获取板块
+     */
+    public Tile getTileAt(int row, int col) {
+        if (row >= 0 && row < 6 && col >= 0 && col < 6) {
+            return tileTable[row][col];
+        }
+        return null;
     }
 }
 
