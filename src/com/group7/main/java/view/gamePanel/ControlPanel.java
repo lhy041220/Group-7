@@ -17,6 +17,7 @@ public class ControlPanel extends JPanel {
     private JButton captureTreasureButton;
     private JButton collectTreasureButton;
     private JButton endTurnButton;
+    private JButton useSpecialAbilityButton;
 
     public ControlPanel() {
         setPreferredSize(new Dimension(1500, 50));
@@ -29,6 +30,7 @@ public class ControlPanel extends JPanel {
         this.captureTreasureButton = new JButton("Capture Treasure");
         this.collectTreasureButton = new JButton("Collect Treasure");
         this.endTurnButton = new JButton("End Turn");
+        this.useSpecialAbilityButton = new JButton("Use Special Ability");
 
         addControlButtons();
     }
@@ -42,6 +44,7 @@ public class ControlPanel extends JPanel {
         add(giveCardButton);
         add(captureTreasureButton);
         add(collectTreasureButton);
+        add(useSpecialAbilityButton);
         add(endTurnButton);
     }
 }

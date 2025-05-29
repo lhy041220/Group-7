@@ -16,5 +16,10 @@ public class ForbiddenIslandGame {
         mainFrame.onCollectTreasureButtonClick.addListener(sender -> {
             gameController.handleCollectTreasure();
         });
+
+        mainFrame.onUseSpecialAbilityButtonClick.addListener(sender -> {
+            // 这里暂时传null，后续可联动UI选择目标格
+            gameController.handleUseSpecialAbility(null);
+        });
     }
 }

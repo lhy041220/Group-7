@@ -92,6 +92,19 @@ public class GameController {
         checkAfterPlayerAction(player);
     }
 
+    // 使用职业特殊能力
+    public void handleUseSpecialAbility(Tile destination) {
+        Player player = game.getCurrentPlayer();
+        boolean success = player.useSpecialAbility(destination);
+        if (success) {
+            mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + "使用了职业特殊能力。");
+            mainFrame.updateBoard(game.getBoard());
+            checkAfterPlayerAction(player);
+        } else {
+            mainFrame.addConsoleMessage("职业能力使用失败：请检查目标是否合法或行动点是否足够。");
+        }
+    }
+
     // 每次行动后调用：用完行动点就进入抽牌/下阶段
     private void checkAfterPlayerAction(Player player) {
         if (player.getRemainingActions() <= 0) {

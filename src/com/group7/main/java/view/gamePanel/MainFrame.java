@@ -22,6 +22,7 @@ public class MainFrame extends JFrame {
     public final Event onCaptureTreasureButtonClick;
     public final Event onCollectTreasureButtonClick;
     public final Event onEndTurnButtonClick;
+    public final Event onUseSpecialAbilityButtonClick;
 
     private GameBoardPanel gameBoardPanel;
     @Getter
@@ -45,6 +46,7 @@ public class MainFrame extends JFrame {
         onCaptureTreasureButtonClick = new Event();
         onCollectTreasureButtonClick = new Event();
         onEndTurnButtonClick = new Event();
+        onUseSpecialAbilityButtonClick = new Event();
 
         initComponents();
         addComponents();
@@ -90,6 +92,7 @@ public class MainFrame extends JFrame {
         controlPanel.getGiveCardButton().addActionListener(e -> onGiveCardButtonClick.invoke(this, null));
         controlPanel.getCaptureTreasureButton().addActionListener(e -> onCaptureTreasureButtonClick.invoke(this, null));
         controlPanel.getCollectTreasureButton().addActionListener(e -> onCollectTreasureButtonClick.invoke(this, null));
+        controlPanel.getUseSpecialAbilityButton().addActionListener(e -> onUseSpecialAbilityButtonClick.invoke(this, null));
         controlPanel.getEndTurnButton().addActionListener(e -> onEndTurnButtonClick.invoke(this, null));
     }
 
