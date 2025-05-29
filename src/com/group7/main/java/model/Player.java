@@ -529,6 +529,31 @@ public class Player {
         }
         return false;
     }
+
+    public boolean tryCollectTreasure(Game game) {
+        Tile currTile = getCurrentTile();
+        if (currTile == null) return false;
+        TreasureType treasureType = currTile.getTreasure();
+        if (treasureType == null || treasureType == TreasureType.NONE) return false;
+        if (game.isTreasureCollected(treasureType)) return false;
+        // 统计手牌中对应宝藏卡数量
+        List<Card> treasureCards = new ArrayList<>();
+        for (Card card : hand) {
+            if (card instanceof model.card.TreasureCard) {
+                model.card.TreasureCard tc = (model.card.TreasureCard) card;
+                if (tc.getTreasureType() == treasureType) {
+                    treasureCards.add(card);
+                }
+            }
+        }
+        if (treasureCards.size() < 4) return false;
+        // 消耗4张卡
+        for (int i = 0; i < 4; i++) {
+            hand.remove(treasureCards.get(i));
+        }
+        game.collectTreasure(treasureType);
+        return true;
+    }
 }
 
 

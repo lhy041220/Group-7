@@ -184,4 +184,16 @@ public class GameController {
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
         // 可拓展：更新玩家信息面板、卡牌面板等
     }
+
+    // 处理收集宝藏
+    public void handleCollectTreasure() {
+        Player player = game.getCurrentPlayer();
+        boolean success = player.tryCollectTreasure(game);
+        if (success) {
+            mainFrame.addConsoleMessage("player" + player.getPlayerId() + "Successfully collect the treasure!");
+            mainFrame.updateBoard(game.getBoard());
+        } else {
+            mainFrame.addConsoleMessage("Failed to collect treasure: Requires 4 corresponding treasure cards in the treasure tile and the treasure has not been collected.");
+        }
+    }
 }

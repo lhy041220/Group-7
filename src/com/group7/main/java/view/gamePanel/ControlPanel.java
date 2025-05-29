@@ -15,6 +15,7 @@ public class ControlPanel extends JPanel {
     private JButton shoreUpButton;
     private JButton giveCardButton;
     private JButton captureTreasureButton;
+    private JButton collectTreasureButton;
     private JButton endTurnButton;
 
     public ControlPanel() {
@@ -26,6 +27,7 @@ public class ControlPanel extends JPanel {
         this.shoreUpButton = new JButton("Shore Up");
         this.giveCardButton = new JButton("Give Card");
         this.captureTreasureButton = new JButton("Capture Treasure");
+        this.collectTreasureButton = new JButton("Collect Treasure");
         this.endTurnButton = new JButton("End Turn");
 
         addControlButtons();
@@ -39,6 +41,7 @@ public class ControlPanel extends JPanel {
         add(shoreUpButton);
         add(giveCardButton);
         add(captureTreasureButton);
+        add(collectTreasureButton);
         add(endTurnButton);
     }
 }

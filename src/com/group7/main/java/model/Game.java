@@ -44,6 +44,14 @@ public class Game {
 
     private int round = 1;
 
+    private Set<TreasureType> collectedTreasures = new HashSet<>();
+    public boolean isTreasureCollected(TreasureType type) {
+        return collectedTreasures.contains(type);
+    }
+    public void collectTreasure(TreasureType type) {
+        collectedTreasures.add(type);
+    }
+
     private Game() {
         board = new Board();
         waterLevel = new WaterLevel();
@@ -332,7 +340,7 @@ public class Game {
     }
 
     /**
-     * 细化职业能力的“玩家是否还能逃脱”的判定。适配所有职业。
+     * 细化职业能力的"玩家是否还能逃脱"的判定。适配所有职业。
      * @param player 检查的玩家
      * @return true=还能逃脱；false=被困
      */

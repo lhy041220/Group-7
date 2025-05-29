@@ -12,5 +12,9 @@ public class ForbiddenIslandGame {
 
         gameController.initializeViewFrame();
         gameController.startGame();
+
+        mainFrame.onCollectTreasureButtonClick.addListener(sender -> {
+            gameController.handleCollectTreasure();
+        });
     }
 }
