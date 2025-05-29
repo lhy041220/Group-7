@@ -47,4 +47,12 @@ public class ControlPanel extends JPanel {
         add(useSpecialAbilityButton);
         add(endTurnButton);
     }
+
+    public void setMoveButtonEnabled(boolean enabled) { moveButton.setEnabled(enabled); }
+    public void setShoreUpButtonEnabled(boolean enabled) { shoreUpButton.setEnabled(enabled); }
+    public void setGiveCardButtonEnabled(boolean enabled) { giveCardButton.setEnabled(enabled); }
+    public void setCaptureTreasureButtonEnabled(boolean enabled) { captureTreasureButton.setEnabled(enabled); }
+    public void setCollectTreasureButtonEnabled(boolean enabled) { collectTreasureButton.setEnabled(enabled); }
+    public void setUseSpecialAbilityButtonEnabled(boolean enabled) { useSpecialAbilityButton.setEnabled(enabled); }
+    public void setEndTurnButtonEnabled(boolean enabled) { endTurnButton.setEnabled(enabled); }
 }

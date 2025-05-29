@@ -21,5 +21,10 @@ public class ForbiddenIslandGame {
             // 这里暂时传null，后续可联动UI选择目标格
             gameController.handleUseSpecialAbility(null);
         });
+
+        mainFrame.setTileClickEvent((row, col) -> {
+            System.out.println("点击了地图格子：(" + row + ", " + col + ")");
+            // 后续可联动GameController.handlePlayerMove等方法
+        });
     }
 }

@@ -5,6 +5,7 @@ import model.*;
 import model.card.*;
 import view.gamePanel.MainFrame;
 import model.enums.GameState;
+import view.gamePanel.ControlPanel;
 
 import javax.swing.*;
 
@@ -32,6 +33,7 @@ public class GameController {
         if (game != null && mainFrame != null) {
             game.startGame(getPlayerNum());
             mainFrame.updateBoard(game.getBoard());
+            mainFrame.updatePlayerHand(game.getCurrentPlayer().getHand());
             // 通知回合开始
             handleStartPlayerTurn();
         }
@@ -113,6 +115,7 @@ public class GameController {
         } else {
             mainFrame.addConsoleMessage("剩余行动：" + player.getRemainingActions());
         }
+        mainFrame.updatePlayerHand(player.getHand());
     }
 
 
@@ -186,6 +189,7 @@ public class GameController {
         curr.resetActionsForTurn();
         mainFrame.addConsoleMessage("轮到玩家 " + curr.getPlayerId());
         updateAllUI();
+        mainFrame.updatePlayerHand(curr.getHand());
     }
 
     // 结束玩家回合（如由按钮控制）
@@ -211,7 +215,17 @@ public class GameController {
         mainFrame.updateBoard(game.getBoard());
         mainFrame.updateWaterLevel(game.getWaterLevel().getCurrentLevel());
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
-        // 可拓展：更新玩家信息面板、卡牌面板等
+        mainFrame.updatePlayerHand(game.getCurrentPlayer().getHand());
+        // 动态设置按钮可用性
+        ControlPanel controlPanel = mainFrame.getControlPanel();
+        // 这里只做简单示例，实际可根据TurnManager阶段更细致控制
+        controlPanel.setMoveButtonEnabled(true);
+        controlPanel.setShoreUpButtonEnabled(true);
+        controlPanel.setGiveCardButtonEnabled(true);
+        controlPanel.setCaptureTreasureButtonEnabled(true);
+        controlPanel.setCollectTreasureButtonEnabled(true);
+        controlPanel.setUseSpecialAbilityButtonEnabled(true);
+        controlPanel.setEndTurnButtonEnabled(true);
     }
 
     // 处理收集宝藏
@@ -224,5 +238,6 @@ public class GameController {
         } else {
             mainFrame.addConsoleMessage("Failed to collect treasure: Requires 4 corresponding treasure cards in the treasure tile and the treasure has not been collected.");
         }
+        mainFrame.updatePlayerHand(player.getHand());
     }
 }

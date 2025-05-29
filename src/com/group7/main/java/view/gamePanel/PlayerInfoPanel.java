@@ -31,10 +31,29 @@ public class PlayerInfoPanel extends JPanel {
         this.removeAll();
         for (int i = 0; i < players.size(); i++) {
             Player p = players.get(i);
-            JLabel label = new JLabel("Player " + p.getPlayerId()
-                    + ((i == currentIdx) ? "（行动中）" : ""));
-            if (i == currentIdx) label.setFont(label.getFont().deriveFont(Font.BOLD));
+            StringBuilder info = new StringBuilder();
+            info.append("Player ").append(p.getPlayerId());
+            info.append(" | 职业: ").append(p.getRole());
+            info.append(" | 剩余行动: ").append(p.getRemainingActions());
+            info.append(" | 手牌: ").append(p.getHand().size());
+            if (p.getCurrentTile() != null) {
+                info.append(" | 位置: ").append(p.getCurrentTile().getType().getDisplayName());
+            }
+            JLabel label = new JLabel(info.toString());
+            if (i == currentIdx) {
+                label.setFont(label.getFont().deriveFont(Font.BOLD));
+                label.setForeground(Color.BLUE);
+            }
             this.add(label);
+            // 展示手牌内容
+            JPanel handPanel = new JPanel();
+            handPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
+            for (model.card.Card card : p.getHand()) {
+                JLabel cardLabel = new JLabel(card.getName());
+                cardLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+                handPanel.add(cardLabel);
+            }
+            this.add(handPanel);
         }
         this.revalidate();
         this.repaint();

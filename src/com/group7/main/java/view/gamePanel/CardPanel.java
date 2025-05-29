@@ -2,6 +2,10 @@ package view.gamePanel;
 
 import javax.swing.*;
 import java.awt.*;
+import model.card.Card;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.List;
 
 public class CardPanel extends JPanel {
 
@@ -47,14 +51,21 @@ public class CardPanel extends JPanel {
     }
 
     /**
-     * 更新玩家手牌显示
-     * @param cards 玩家手中的卡牌
+     * 更新玩家手牌显示（新版，支持Card对象列表）
      */
-    public void updatePlayerHand(String[] cards) {
+    public void updatePlayerHand(List<Card> cards) {
         playerHandPanel.removeAll();
-        for (String card : cards) {
-            JLabel cardLabel = new JLabel(card);
+        for (Card card : cards) {
+            JLabel cardLabel = new JLabel(card.getName() + " [" + card.getType() + "]");
             cardLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            // 支持点击手牌
+            cardLabel.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    System.out.println("点击了手牌：" + card.getName());
+                    // 后续可联动GameController实现用卡
+                }
+            });
             playerHandPanel.add(cardLabel);
         }
         playerHandPanel.revalidate();

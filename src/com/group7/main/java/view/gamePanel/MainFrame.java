@@ -32,7 +32,16 @@ public class MainFrame extends JFrame {
     private WaterLevelPanel waterLevelPanel;
     private ConsolePanel consolePanel;
 
-
+    public interface TileClickEvent {
+        void onTileClicked(int row, int col);
+    }
+    private TileClickEvent tileClickEvent;
+    public void setTileClickEvent(TileClickEvent event) {
+        this.tileClickEvent = event;
+        gameBoardPanel.setTileClickListener((row, col) -> {
+            if (tileClickEvent != null) tileClickEvent.onTileClicked(row, col);
+        });
+    }
 
     private MainFrame() {
         setTitle("Forbidden Island");
@@ -111,5 +120,11 @@ public class MainFrame extends JFrame {
     public void addConsoleMessage(String message) {
         consolePanel.addMessage(message);
     }
+
+    public void updatePlayerHand(java.util.List<model.card.Card> cards) {
+        cardPanel.updatePlayerHand(cards);
+    }
+
+    public ControlPanel getControlPanel() { return controlPanel; }
 
 }
