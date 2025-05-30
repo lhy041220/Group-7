@@ -20,6 +20,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.JOptionPane;
 import java.util.Collections;
+import model.enums.Role;
 
 @Getter
 public class Game {
@@ -254,6 +255,16 @@ public class Game {
         for (int i = 0; i < numPlayers; i++) {
             Player player = new Player(i + 1, board.getTileByType(TileType.CORAL_PALACE));
             players.add(player);
+        }
+
+        // 自动分配不同的角色
+        java.util.List<Role> allRoles = new java.util.ArrayList<>();
+        Collections.addAll(allRoles, Role.values());
+        // 去除未定义的NONE等角色（如果有）
+        allRoles.removeIf(r -> r.name().equalsIgnoreCase("NONE"));
+        Collections.shuffle(allRoles);
+        for (int i = 0; i < players.size(); i++) {
+            players.get(i).setRole(allRoles.get(i));
         }
 
         // Dialog to select starting player
