@@ -91,15 +91,12 @@ public class Player {
     }
 
     public boolean moveToTile(Tile destinationTile) {
-        // 检查移动是否合法
+        System.out.println("moveToTile: 当前=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " 目标=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null"));
         if (canMoveTo(destinationTile)) {
-            // 从当前板块移除玩家
             if (this.currentTile != null) {
                 this.currentTile.removePlayer(this);
             }
-            // 更新当前位置
             this.currentTile = destinationTile;
-            // 添加到新板块
             this.currentTile.addPlayer(this);
             return true;
         }
@@ -110,30 +107,23 @@ public class Player {
      * 检查是否可以移动到目标板块
      */
     public boolean canMoveTo(Tile destinationTile) {
+        boolean result = false;
         if (destinationTile == null || !destinationTile.isNavigable()) {
-            return false;
-        }
-
-        // 如果是探险家，可以斜向移动
-        if (role == Role.EXPLORER) {
+            result = false;
+        } else if (role == Role.EXPLORER) {
             List<Tile> reachableTiles = Game.getInstance().getBoard().getDiagonalAndOrthogonalTiles(currentTile);
-            return reachableTiles.contains(destinationTile);
-        }
-
-        // 如果是潜水员，可以穿过被淹没的板块
-        if (role == Role.DIVER) {
+            result = reachableTiles.contains(destinationTile);
+        } else if (role == Role.DIVER) {
             List<Tile> reachableTiles = Game.getInstance().getBoard().getReachableTilesForDiver(currentTile);
-            return reachableTiles.contains(destinationTile);
+            result = reachableTiles.contains(destinationTile);
+        } else if (role == Role.PILOT && !hasUsedSpecialAbility) {
+            result = true;
+        } else {
+            List<Tile> adjacentTiles = Game.getInstance().getBoard().getAdjacentTiles(currentTile);
+            result = adjacentTiles.contains(destinationTile);
         }
-
-        // 如果是飞行员且未使用过特殊能力，可以飞到任何地方
-        if (role == Role.PILOT && !hasUsedSpecialAbility) {
-            return true;
-        }
-
-        // 普通移动规则：只能移动到相邻的板块
-        List<Tile> adjacentTiles = Game.getInstance().getBoard().getAdjacentTiles(currentTile);
-        return adjacentTiles.contains(destinationTile);
+        System.out.println("canMoveTo: 当前=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " 目标=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null") + " 结果=" + (result ? "可移动" : "不可移动"));
+        return result;
     }
 
     /**

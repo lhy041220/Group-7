@@ -57,6 +57,11 @@ public class GameBoardPanel extends JPanel {
         repaint();
     }
 
+    public enum Mode { NORMAL, MOVE }
+    private Mode currentMode = Mode.NORMAL;
+    public void setMode(Mode mode) { this.currentMode = mode; }
+    public Mode getMode() { return currentMode; }
+
     public GameBoardPanel() {
         this.tilePanels = new JPanel[GRID_SIZE][GRID_SIZE];
 
@@ -87,7 +92,10 @@ public class GameBoardPanel extends JPanel {
                 tilePanel.addMouseListener(new MouseAdapter() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        if (tileClickListener != null) {
+                        if (currentMode == Mode.MOVE && tileClickListener != null) {
+                            tileClickListener.onTileClicked(finalRow, finalCol);
+                            setMode(Mode.NORMAL); // 移动后自动退出移动模式
+                        } else if (tileClickListener != null) {
                             tileClickListener.onTileClicked(finalRow, finalCol);
                         }
                     }
@@ -208,5 +216,9 @@ public class GameBoardPanel extends JPanel {
             return tilePanels[row][col];
         }
         return null;
+    }
+
+    public boolean isTileHighlighted(int row, int col) {
+        return highlightedTiles.contains(row + "," + col);
     }
 }

@@ -387,5 +387,16 @@ public class Board {
         }
         return null;
     }
+
+    public int[] getTilePosition(Tile tile) {
+        for (int row = 0; row < tileTable.length; row++) {
+            for (int col = 0; col < tileTable[row].length; col++) {
+                if (tileTable[row][col] == tile) {
+                    return new int[]{row, col};
+                }
+            }
+        }
+        return null;
+    }
 }
 

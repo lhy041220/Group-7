@@ -203,31 +203,40 @@ public class ForbiddenIslandGame {
 
         // 新增：主按钮事件绑定核心操作
         mainFrame.onMoveButtonClick.addListener(sender -> {
+            MainFrame mf = MainFrame.getInstance();
+            mf.addConsoleMessage("请选择要移动到的格子");
+            mf.getGameBoardPanel().setMode(view.gamePanel.GameBoardPanel.Mode.MOVE);
+            // 高亮所有可移动格子
             Player player = game.getCurrentPlayer();
-            List<Tile> movableTiles = new ArrayList<>();
-            // 获取所有可移动目标
+            java.util.List<Tile> movableTiles = new java.util.ArrayList<>();
             for (Tile tile : game.getBoard().getAllTiles()) {
                 if (player.canMoveTo(tile) && tile != player.getCurrentTile()) {
                     movableTiles.add(tile);
                 }
             }
-            if (movableTiles.isEmpty()) {
-                JOptionPane.showMessageDialog(mainFrame, "没有可移动的目标！", "提示", JOptionPane.WARNING_MESSAGE);
-                return;
+            java.util.List<int[]> positions = new java.util.ArrayList<>();
+            for (Tile t : movableTiles) {
+                int[] pos = ((model.Board)game.getBoard()).getTilePosition(t);
+                if (pos != null) positions.add(pos);
             }
-            Tile selected = (Tile) JOptionPane.showInputDialog(
-                mainFrame,
-                "请选择要移动到的格子：",
-                "移动",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                movableTiles.toArray(),
-                movableTiles.get(0)
-            );
-            if (selected != null) {
-                gameController.handlePlayerMove(selected);
+            mf.getGameBoardPanel().highlightTiles(positions);
+        });
+
+        // 设置地图点击事件
+        mainFrame.setTileClickEvent((row, col) -> {
+            if (mainFrame.getGameBoardPanel().getMode() == view.gamePanel.GameBoardPanel.Mode.MOVE) {
+                // 只允许点击高亮格子
+                if (!mainFrame.getGameBoardPanel().isTileHighlighted(row, col)) return;
+                Board board = game.getBoard();
+                Tile target = null;
+                try { target = board.getTile(row, col); } catch (Exception ignored) {}
+                if (target != null) {
+                    gameController.handlePlayerMove(target);
+                    mainFrame.getGameBoardPanel().clearHighlight();
+                }
             }
         });
+
         mainFrame.onShoreUpButtonClick.addListener(sender -> {
             Player player = game.getCurrentPlayer();
             List<Tile> shoreableTiles = new ArrayList<>();

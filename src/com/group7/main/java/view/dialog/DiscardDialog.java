@@ -3,10 +3,12 @@ package view.dialog;
 import model.Player;
 import model.card.Card;
 import model.card.SpecialCard;
+import model.Board;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
+import java.util.ArrayList;
 
 public class DiscardDialog extends JDialog {
     private Player player;
