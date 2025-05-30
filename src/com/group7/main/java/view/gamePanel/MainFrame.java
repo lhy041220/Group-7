@@ -197,4 +197,8 @@ public class MainFrame extends JFrame {
         controlPanel.getGiveCardButton().addActionListener(e -> callback.run());
     }
 
+    public GameBoardPanel getGameBoardPanel() {
+        return gameBoardPanel;
+    }
+
 }

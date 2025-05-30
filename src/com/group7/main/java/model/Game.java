@@ -257,7 +257,7 @@ public class Game {
         // 初始化玩家list
         players.clear(); // 清除之前的玩家
         for (int i = 0; i < numPlayers; i++) {
-            Player player = new Player(i + 1, board.getTileByType(TileType.HOWLING_GARDEN));
+            Player player = new Player(i + 1, board.getTileByType(TileType.CORAL_PALACE));
             players.add(player);
         }
 
@@ -658,5 +658,9 @@ public class Game {
 
     public void setTurnManager(TurnManager turnManager) {
         this.turnManager = turnManager;
+    }
+
+    public Board getBoard() {
+        return board;
     }
 }

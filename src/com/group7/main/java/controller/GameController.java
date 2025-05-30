@@ -8,12 +8,15 @@ import model.enums.GameState;
 import model.TurnManager.ActionType;
 
 import javax.swing.*;
+import java.io.InputStream;
 
 public class GameController {
     @Getter
     private Game game;
     private MainFrame mainFrame;
 
+
+    private final String IMAGE_DIR = "/images/Tiles/";
 
     public GameController(Game game, MainFrame mainFrame) {
         // 默认构造函数
