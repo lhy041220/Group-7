@@ -89,11 +89,14 @@ public class Player {
     }
 
     public boolean moveToTile(Tile destinationTile) {
-        System.out.println("moveToTile: current=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " target=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null"));
-        if (canMoveTo(destinationTile)) {
-            if (this.currentTile != null) {
-                this.currentTile.removePlayer(this);
-            }
+        if (destinationTile == null || destinationTile.isSunk() || remainingActions <= 0) return false;
+        Tile current = this.currentTile;
+        if (current == null) return false;
+        // 只允许上下左右移动
+        int dr = Math.abs(current.getRow() - destinationTile.getRow());
+        int dc = Math.abs(current.getCol() - destinationTile.getCol());
+        if ((dr == 1 && dc == 0) || (dr == 0 && dc == 1)) {
+            current.removePlayer(this);
             this.currentTile = destinationTile;
             this.currentTile.addPlayer(this);
             return true;
@@ -101,27 +104,13 @@ public class Player {
         return false;
     }
 
-    /**
-     * Check if the player can move to the target tile.
-     */
     public boolean canMoveTo(Tile destinationTile) {
-        boolean result = false;
-        if (destinationTile == null || !destinationTile.isNavigable()) {
-            result = false;
-        } else if (role == Role.EXPLORER) {
-            List<Tile> reachableTiles = Game.getInstance().getBoard().getDiagonalAndOrthogonalTiles(currentTile);
-            result = reachableTiles.contains(destinationTile);
-        } else if (role == Role.DIVER) {
-            List<Tile> reachableTiles = Game.getInstance().getBoard().getReachableTilesForDiver(currentTile);
-            result = reachableTiles.contains(destinationTile);
-        } else if (role == Role.PILOT && !hasUsedSpecialAbility) {
-            result = true;
-        } else {
-            List<Tile> adjacentTiles = Game.getInstance().getBoard().getAdjacentTiles(currentTile);
-            result = adjacentTiles.contains(destinationTile);
-        }
-        System.out.println("canMoveTo: current=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " target=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null") + " result=" + (result ? "can move" : "cannot move"));
-        return result;
+        if (destinationTile == null || destinationTile.isSunk() || remainingActions <= 0) return false;
+        Tile current = this.currentTile;
+        if (current == null) return false;
+        int dr = Math.abs(current.getRow() - destinationTile.getRow());
+        int dc = Math.abs(current.getCol() - destinationTile.getCol());
+        return (dr == 1 && dc == 0) || (dr == 0 && dc == 1);
     }
 
     /**

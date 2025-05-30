@@ -115,9 +115,7 @@ public class Board {
      * Returns the tile at the specified coordinates.
      */
     public Tile getTile(int row, int col) {
-        if (row < 0 || row >= rows || col < 0 || col >= cols) {
-            throw new IllegalArgumentException("Incorrect coordinates of the tile");
-        }
+        if (row < 0 || row >= tileTable.length || col < 0 || col >= tileTable[0].length) return null;
         return tileTable[row][col];
     }
 
@@ -125,8 +123,8 @@ public class Board {
      * Returns the tile of a specific type.
      */
     public Tile getTileByType(TileType tileType) {
-        for (int row = 0; row < rows; row++) {
-            for (int col = 0; col < cols; col++) {
+        for (int row = 0; row < tileTable.length; row++) {
+            for (int col = 0; col < tileTable[row].length; col++) {
                 if (tileTable[row][col] != null && tileTable[row][col].getType() == tileType) {
                     return tileTable[row][col];
                 }
@@ -202,25 +200,27 @@ public class Board {
      */
     public List<Tile> getAdjacentTiles(Tile tile) {
         List<Tile> adjacentTiles = new ArrayList<>();
-        int row = tile.getRow();
-        int col = tile.getCol();
+        if (tile == null) return adjacentTiles;
 
-        // Up
-        if (row > 0 && tileTable[row-1][col] != null) {
-            adjacentTiles.add(tileTable[row-1][col]);
+        int[] pos = getTilePosition(tile);
+        if (pos == null) return adjacentTiles;
+
+        int row = pos[0];
+        int col = pos[1];
+
+        // 检查上下左右四个方向
+        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        for (int[] dir : directions) {
+            int newRow = row + dir[0];
+            int newCol = col + dir[1];
+            if (isValidPosition(newRow, newCol)) {
+                Tile adjacentTile = tileTable[newRow][newCol];
+                if (adjacentTile != null) {
+                    adjacentTiles.add(adjacentTile);
+                }
+            }
         }
-        // Down
-        if (row < rows-1 && tileTable[row+1][col] != null) {
-            adjacentTiles.add(tileTable[row+1][col]);
-        }
-        // Left
-        if (col > 0 && tileTable[row][col-1] != null) {
-            adjacentTiles.add(tileTable[row][col-1]);
-        }
-        // Right
-        if (col < cols-1 && tileTable[row][col+1] != null) {
-            adjacentTiles.add(tileTable[row][col+1]);
-        }
+
         return adjacentTiles;
     }
 
@@ -228,54 +228,60 @@ public class Board {
      * Returns all tiles adjacent, including diagonals, to the specified tile.
      */
     public List<Tile> getDiagonalAndOrthogonalTiles(Tile tile) {
-        List<Tile> allTiles = new ArrayList<>();
-        int row = tile.getRow();
-        int col = tile.getCol();
+        List<Tile> reachableTiles = new ArrayList<>();
+        if (tile == null) return reachableTiles;
 
-        // Scan all cells in a 3x3 area (excluding the center itself)
-        for (int i = -1; i <= 1; i++) {
-            for (int j = -1; j <= 1; j++) {
-                if (i == 0 && j == 0) continue; // Skip the center point
+        int[] pos = getTilePosition(tile);
+        if (pos == null) return reachableTiles;
 
-                int newRow = row + i;
-                int newCol = col + j;
+        int row = pos[0];
+        int col = pos[1];
 
-                if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols
-                        && tileTable[newRow][newCol] != null) {
-                    allTiles.add(tileTable[newRow][newCol]);
+        // 检查八个方向（上下左右和对角）
+        int[][] directions = {
+            {-1, 0}, {1, 0}, {0, -1}, {0, 1},  // 上下左右
+            {-1, -1}, {-1, 1}, {1, -1}, {1, 1}  // 对角
+        };
+
+        for (int[] dir : directions) {
+            int newRow = row + dir[0];
+            int newCol = col + dir[1];
+            if (isValidPosition(newRow, newCol)) {
+                Tile reachableTile = tileTable[newRow][newCol];
+                if (reachableTile != null) {
+                    reachableTiles.add(reachableTile);
                 }
             }
         }
-        return allTiles;
+
+        return reachableTiles;
     }
 
     /**
      * Returns all reachable tiles for the Diver (i.e., can traverse flooded and sunk tiles).
      */
-    public List<Tile> getReachableTilesForDiver(Tile startTile) {
+    public List<Tile> getReachableTilesForDiver(Tile tile) {
         List<Tile> reachableTiles = new ArrayList<>();
+        if (tile == null) return reachableTiles;
+
         Set<Tile> visited = new HashSet<>();
         Queue<Tile> queue = new LinkedList<>();
-
-        queue.add(startTile);
-        visited.add(startTile);
+        queue.add(tile);
+        visited.add(tile);
 
         while (!queue.isEmpty()) {
             Tile current = queue.poll();
-
             for (Tile adjacent : getAdjacentTiles(current)) {
-                if (!visited.contains(adjacent)) {
-                    if (adjacent.isNavigable() || adjacent.isFlooded() || adjacent.isSunk()) {
-                        reachableTiles.add(adjacent);
-                        // Continue searching if the tile is flooded or sunk
-                        if (adjacent.isFlooded() || adjacent.isSunk()) {
-                            queue.add(adjacent);
-                        }
-                    }
+                if (!visited.contains(adjacent) && (adjacent.isFlooded() || !adjacent.isSunk())) {
+                    reachableTiles.add(adjacent);
                     visited.add(adjacent);
+                    if (adjacent.isFlooded()) {
+                        queue.add(adjacent);
+                    }
                 }
             }
         }
+
         return reachableTiles;
     }
 
@@ -395,5 +401,44 @@ public class Board {
             }
         }
         return null;
+    }
+
+    /**
+     * 检查位置是否有效
+     */
+    private boolean isValidPosition(int row, int col) {
+        return row >= 0 && row < tileTable.length && col >= 0 && col < tileTable[0].length;
+    }
+
+    /**
+     * 获取玩家当前可移动的所有格子（只返回 tileTable 里的唯一对象）
+     */
+    public List<Tile> getMovableTilesForPlayer(Player player) {
+        Tile current = player.getCurrentTile();
+        if (current == null) return new ArrayList<>();
+        List<Tile> result = new ArrayList<>();
+        if (player.getRole() == model.enums.Role.EXPLORER) {
+            result.addAll(getDiagonalAndOrthogonalTiles(current));
+        } else if (player.getRole() == model.enums.Role.DIVER) {
+            result.addAll(getReachableTilesForDiver(current));
+        } else {
+            result.addAll(getAdjacentTiles(current));
+        }
+        // 只保留未沉没的格子
+        result.removeIf(tile -> tile == null || tile.isSunk());
+        // 不能移动到自己当前格子
+        result.remove(current);
+        return result;
+    }
+
+    /**
+     * 调试用：打印玩家可移动格子的类型和对象hash
+     */
+    public void debugPrintMovableTiles(Player player) {
+        List<Tile> movable = getMovableTilesForPlayer(player);
+        System.out.println("[DEBUG] movable tiles for player " + player.getPlayerId() + ":");
+        for (Tile t : movable) {
+            System.out.println("  " + t.getType().getDisplayName() + " hash=" + System.identityHashCode(t));
+        }
     }
 }

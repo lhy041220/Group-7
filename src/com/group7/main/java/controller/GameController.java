@@ -8,6 +8,7 @@ import model.enums.GameState;
 
 import javax.swing.*;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Controller for managing the main game process, player actions, and UI updates.
@@ -54,20 +55,23 @@ public class GameController {
     }
 
     /**
-     * Handle player's manual movement to the specified destination tile.
-     *
-     * @param destination The tile to move the player to
+     * 处理玩家移动到指定格子的请求
      */
     public void handlePlayerMove(Tile destination) {
         Player player = game.getCurrentPlayer();
-        if (player.getRemainingActions() > 0) {
-            // Call player's move method
-            if (player.moveToTile(destination)) {
-                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " moved to " + destination);
-                player.useAction();
-                mainFrame.updateBoard(game.getBoard());
-                checkAfterPlayerAction(player);
-            }
+        if (player == null || destination == null) return;
+        List<Tile> movable = game.getBoard().getMovableTilesForPlayer(player);
+        if (!movable.contains(destination)) {
+            mainFrame.addConsoleMessage("无法移动到该格子！");
+            return;
+        }
+        if (player.moveToTile(destination)) {
+            player.useAction();
+            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 移动到了 " + destination.getType().getDisplayName());
+            mainFrame.updateBoard(game.getBoard());
+            checkAfterPlayerAction(player);
+        } else {
+            mainFrame.addConsoleMessage("移动失败！");
         }
     }
 

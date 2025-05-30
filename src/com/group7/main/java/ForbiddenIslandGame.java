@@ -43,32 +43,32 @@ public class ForbiddenIslandGame {
                 MainFrame mf = MainFrame.getInstance();
                 mf.addConsoleMessage("Please select the tile to move to.");
                 mf.getGameBoardPanel().setMode(view.gamePanel.GameBoardPanel.Mode.MOVE);
-                // Highlight movable tiles
                 Player player = game.getCurrentPlayer();
-                List<Tile> movableTiles = new ArrayList<>();
-                for (Tile tile : game.getBoard().getAllTiles()) {
-                    if (player.canMoveTo(tile) && tile != player.getCurrentTile()) {
-                        movableTiles.add(tile);
-                    }
-                }
+                List<Tile> movableTiles = game.getBoard().getMovableTilesForPlayer(player);
                 List<int[]> positions = new ArrayList<>();
                 for (Tile t : movableTiles) {
-                    int[] pos = ((model.Board)game.getBoard()).getTilePosition(t);
+                    int[] pos = game.getBoard().getTilePosition(t);
                     if (pos != null) positions.add(pos);
                 }
                 mf.getGameBoardPanel().highlightTiles(positions);
             });
 
-            // Set board click event
             mainFrame.setTileClickEvent((row, col) -> {
                 if (mainFrame.getGameBoardPanel().getMode() == view.gamePanel.GameBoardPanel.Mode.MOVE) {
-                    if (!mainFrame.getGameBoardPanel().isTileHighlighted(row, col)) return;
                     Board board = game.getBoard();
                     Tile target = null;
                     try { target = board.getTile(row, col); } catch (Exception ignored) {}
+                    Player player = game.getCurrentPlayer();
+                    board.debugPrintMovableTiles(player);
                     if (target != null) {
+                        System.out.println("[DEBUG] click target " + target.getType().getDisplayName() + " hash=" + System.identityHashCode(target));
+                    }
+                    List<Tile> movable = board.getMovableTilesForPlayer(player);
+                    if (target != null && movable.contains(target)) {
                         gameController.handlePlayerMove(target);
                         mainFrame.getGameBoardPanel().clearHighlight();
+                    } else {
+                        mainFrame.addConsoleMessage("无法移动到该格子！");
                     }
                 }
             });
