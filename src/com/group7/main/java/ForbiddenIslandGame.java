@@ -197,24 +197,129 @@ public class ForbiddenIslandGame {
             gameController.handleCollectTreasure();
         });
 
-            mainFrame.onUseSpecialAbilityButtonClick.addListener(sender -> {
-                gameController.handleUseSpecialAbility(null);
+        mainFrame.onUseSpecialAbilityButtonClick.addListener(sender -> {
+            gameController.handleUseSpecialAbility(null);
+        });
+
+        // 新增：主按钮事件绑定核心操作
+        mainFrame.onMoveButtonClick.addListener(sender -> {
+            Player player = game.getCurrentPlayer();
+            List<Tile> movableTiles = new ArrayList<>();
+            // 获取所有可移动目标
+            for (Tile tile : game.getBoard().getAllTiles()) {
+                if (player.canMoveTo(tile) && tile != player.getCurrentTile()) {
+                    movableTiles.add(tile);
+                }
+            }
+            if (movableTiles.isEmpty()) {
+                JOptionPane.showMessageDialog(mainFrame, "没有可移动的目标！", "提示", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Tile selected = (Tile) JOptionPane.showInputDialog(
+                mainFrame,
+                "请选择要移动到的格子：",
+                "移动",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                movableTiles.toArray(),
+                movableTiles.get(0)
+            );
+            if (selected != null) {
+                gameController.handlePlayerMove(selected);
+            }
+        });
+        mainFrame.onShoreUpButtonClick.addListener(sender -> {
+            Player player = game.getCurrentPlayer();
+            List<Tile> shoreableTiles = new ArrayList<>();
+            // 获取所有可排水目标
+            for (Tile tile : game.getBoard().getAllTiles()) {
+                if (player.canShoreUp(tile)) {
+                    shoreableTiles.add(tile);
+                }
+            }
+            if (shoreableTiles.isEmpty()) {
+                JOptionPane.showMessageDialog(mainFrame, "没有可排水的目标！", "提示", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Tile selected = (Tile) JOptionPane.showInputDialog(
+                mainFrame,
+                "请选择要排水的格子：",
+                "排水",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                shoreableTiles.toArray(),
+                shoreableTiles.get(0)
+            );
+            if (selected != null) {
+                gameController.handlePlayerShoreUp(selected);
+            }
+        });
+        mainFrame.onGiveCardButtonClick.addListener(sender -> {
+            Player player = game.getCurrentPlayer();
+            List<Player> others = new ArrayList<>();
+            for (Player p : game.getPlayers()) {
+                if (p != player) {
+                    // 信使可以无视位置，其他角色必须同一格
+                    if (player.getRole() != null && player.getRole().getDisplayName().equals("信使")) {
+                        others.add(p);
+                    } else if (p.getCurrentTile() == player.getCurrentTile()) {
+                        others.add(p);
+                    }
+                }
+            }
+            List<model.card.TreasureCard> giveableCards = player.getGiveableTreasureCards();
+            if (others.isEmpty() || giveableCards.isEmpty()) {
+                JOptionPane.showMessageDialog(mainFrame, "没有可赠送的玩家或宝藏卡！", "提示", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            Player target = (Player) JOptionPane.showInputDialog(
+                mainFrame,
+                "请选择要赠送的玩家：",
+                "赠送卡牌",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                others.toArray(),
+                others.get(0)
+            );
+            if (target == null) return;
+            model.card.TreasureCard card = (model.card.TreasureCard) JOptionPane.showInputDialog(
+                mainFrame,
+                "请选择要赠送的宝藏卡：",
+                "赠送卡牌",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                giveableCards.toArray(),
+                giveableCards.get(0)
+            );
+            if (card == null) return;
+            if (player.giveCardToPlayer(target, card)) {
+                mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 给 玩家" + target.getPlayerId() + " 赠送了卡牌");
+                mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
+            } else {
+                JOptionPane.showMessageDialog(mainFrame, "赠送失败，规则不符！", "提示", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+        mainFrame.onCaptureTreasureButtonClick.addListener(sender -> {
+            gameController.handleCollectTreasure();
+        });
+        mainFrame.onEndTurnButtonClick.addListener(sender -> {
+            gameController.endPlayerTurn();
+        });
+
+            mainFrame.setTileClickEvent((row, col) -> {
+                gameController.handleTileClick(row, col);
             });
 
-        mainFrame.setTileClickEvent((row, col) -> {
-            gameController.handleTileClick(row, col);
-        });
-
-        mainFrame.setSpecialCardCallback(new MainFrame.SpecialCardCallback() {
-            @Override
-            public void onHelicopterLift(model.card.SpecialCard card, int row, int col) {
-                gameController.handlePlayerUseHelicopterLift(card, row, col);
-            }
-            @Override
-            public void onSandbag(model.card.SpecialCard card, int row, int col) {
-                gameController.handlePlayerUseSandbag(card, row, col);
-            }
-        });
+            mainFrame.setSpecialCardCallback(new MainFrame.SpecialCardCallback() {
+                @Override
+                public void onHelicopterLift(model.card.SpecialCard card, int row, int col) {
+                    gameController.handlePlayerUseHelicopterLift(card, row, col);
+                }
+                @Override
+                public void onSandbag(model.card.SpecialCard card, int row, int col) {
+                    gameController.handlePlayerUseSandbag(card, row, col);
+                }
+            });
 
             mainFrame.setShoreUpCallback(() -> gameController.enterShoreUpMode());
             mainFrame.setSpecialAbilityCallback(() -> gameController.enterNavigatorMode());
