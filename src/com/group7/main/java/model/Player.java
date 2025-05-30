@@ -34,6 +34,9 @@ public class Player {
         this.hand = new ArrayList<>();
         this.collectedTreasures = new HashSet<>();
         this.hasUsedSpecialAbility = false;
+        if (startingTile != null) {
+            startingTile.addPlayer(this);
+        }
     }
 
     public void setRole(Role role) {

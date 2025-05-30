@@ -146,11 +146,23 @@ public class GameBoardPanel extends JPanel {
             tilePanel.setOpaque(true);
         }
 
+        // 加载并显示图片
+        try {
+            String imagePath = "src/com/group7/resources/images/Tiles/" + tile.getType().getImagePath();
+            ImageIcon icon = new ImageIcon(imagePath);
+            Image img = icon.getImage().getScaledInstance(TILE_SIZE, TILE_SIZE, Image.SCALE_SMOOTH);
+            JLabel imgLabel = new JLabel(new ImageIcon(img));
+            imgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+            tilePanel.add(imgLabel, BorderLayout.CENTER);
+        } catch (Exception e) {
+            // 图片加载失败时忽略
+        }
+
         // 添加瓦片类型名称标签
         JLabel nameLabel = new JLabel(tile.getType().getDisplayName());
         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
         nameLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK); // 沉没瓦片用白色文字
-        tilePanel.add(nameLabel, BorderLayout.CENTER);
+        tilePanel.add(nameLabel, BorderLayout.SOUTH);
 
         // 添加瓦片状态标签
         JLabel stateLabel = new JLabel();
@@ -161,14 +173,30 @@ public class GameBoardPanel extends JPanel {
         }
         stateLabel.setHorizontalAlignment(SwingConstants.CENTER);
         stateLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK);
-        tilePanel.add(stateLabel, BorderLayout.SOUTH);
+        tilePanel.add(stateLabel, BorderLayout.NORTH);
 
         // 如果有宝藏类型且不是NONE，显示宝藏信息
         if (tile.getTreasure() != null && tile.getTreasure() != TreasureType.NONE) {
             JLabel treasureLabel = new JLabel(tile.getTreasure().toString());
             treasureLabel.setHorizontalAlignment(SwingConstants.CENTER);
             treasureLabel.setForeground(Color.RED);
-            tilePanel.add(treasureLabel, BorderLayout.NORTH);
+            tilePanel.add(treasureLabel, BorderLayout.WEST);
+        }
+
+        // 新增：显示玩家
+        java.util.List<model.Player> players = tile.getPlayersOnTile();
+        if (players != null && !players.isEmpty()) {
+            JPanel playerPanel = new JPanel();
+            playerPanel.setOpaque(false);
+            playerPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 2, 2));
+            Color[] colors = {Color.RED, Color.BLUE, Color.GREEN, Color.ORANGE};
+            for (model.Player p : players) {
+                JLabel playerDot = new JLabel("●");
+                playerDot.setForeground(colors[(p.getPlayerId() - 1) % colors.length]);
+                playerDot.setToolTipText("玩家" + p.getPlayerId());
+                playerPanel.add(playerDot);
+            }
+            tilePanel.add(playerPanel, BorderLayout.EAST);
         }
     }
 
