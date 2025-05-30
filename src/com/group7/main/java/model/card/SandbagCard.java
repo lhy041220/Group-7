@@ -28,7 +28,7 @@ public class SandbagCard extends SpecialCard {
                 public void onTileSelected(Tile tile) {
                     if (tile != null && tile.isFlooded()) {
                         tile.shoreUp(); // Use the correct method name
-                        game.getMainFrame().updateBoard(game.getBoard()); // 更新游戏板显示
+                        game.getMainFrame().updateBoard(game.getBoard());
                     }
                 }
 

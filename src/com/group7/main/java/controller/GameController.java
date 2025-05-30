@@ -18,7 +18,6 @@ public class GameController {
     private Game game;
     private MainFrame mainFrame;
 
-
     private final String IMAGE_DIR = "/images/Tiles/";
 
     public GameController(Game game, MainFrame mainFrame) {
@@ -55,7 +54,7 @@ public class GameController {
     }
 
     /**
-     * 处理玩家移动到指定格子的请求
+     * Handle player's move to the specified tile
      */
     public void handlePlayerMove(Tile destination) {
         Player player = game.getCurrentPlayer();
@@ -128,7 +127,6 @@ public class GameController {
             mainFrame.addConsoleMessage("Remaining actions: " + player.getRemainingActions());
         }
     }
-
 
     /************ Main Turn/Phase Logic ************/
 
@@ -334,14 +332,14 @@ public class GameController {
     }
 
     /**
-     * 处理玩家给卡操作，消耗行动点，刷新UI
+     * Handle the give card action, consume action point, and refresh UI
      */
     public void handleGiveCard(Player from, Player to, Card card) {
         if (from.getRemainingActions() <= 0) {
             mainFrame.addConsoleMessage("Not enough action points!");
             return;
         }
-        // 信使可以远程给卡，其他角色只能同格
+        // Messenger can give cards remotely, other roles must be on the same tile
         boolean canGive = false;
         if (from.getRole() != null && from.getRole().getDisplayName().equals("Messenger")) {
             canGive = true;
