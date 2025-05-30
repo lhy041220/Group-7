@@ -252,14 +252,34 @@ public class GameController {
 
     public void handleCollectTreasure() {
         Player player = game.getCurrentPlayer();
-        if (player.getRemainingActions() > 0) {
-            // Check if treasure can be collected
-            if (player.canCollectTreasure()) {
-                if (player.collectTreasure()) {
-                    mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " collected a treasure.");
-                    checkAfterPlayerAction(player);
-                }
+        Tile tile = player.getCurrentTile();
+        if (player.getRemainingActions() <= 0) {
+            mainFrame.addConsoleMessage("没有足够的行动点！");
+            return;
+        }
+        if (tile == null || tile.getTreasure() == null || tile.getTreasure().toString().equals("NONE")) {
+            mainFrame.addConsoleMessage("当前位置没有宝藏可获取！");
+            return;
+        }
+        // 检查手牌
+        int count = 0;
+        for (Card card : player.getHand()) {
+            if (card instanceof model.card.TreasureCard && ((model.card.TreasureCard) card).getTreasureType() == tile.getTreasure()) {
+                count++;
             }
+        }
+        if (count < 4) {
+            mainFrame.addConsoleMessage("手牌不足4张对应宝藏卡，无法获取宝藏！");
+            return;
+        }
+        // 执行获取宝藏
+        if (player.captureTreasure(tile.getTreasure())) {
+            player.useAction();
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " 成功获得宝藏：" + tile.getTreasure().getDisplayName());
+            mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
+            checkAfterPlayerAction(player);
+        } else {
+            mainFrame.addConsoleMessage("获取宝藏失败！");
         }
     }
 
