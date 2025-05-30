@@ -201,5 +201,14 @@ public class MainFrame extends JFrame {
         return gameBoardPanel;
     }
 
+    public ControlPanel getControlPanel() {
+        return controlPanel;
+    }
+
+    public void updatePlayerHand(java.util.List<model.card.Card> hand) {
+        String[] cardNames = hand.stream().map(model.card.Card::getName).toArray(String[]::new);
+        cardPanel.updatePlayerHand(cardNames);
+    }
+
 }
 

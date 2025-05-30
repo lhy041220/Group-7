@@ -162,6 +162,39 @@ public class ForbiddenIslandGame {
 
             mainFrame.setShoreUpCallback(() -> gameController.enterShoreUpMode());
             mainFrame.setSpecialAbilityCallback(() -> gameController.enterNavigatorMode());
+
+            mainFrame.getControlPanel().getViewTreasureDiscardButton().addActionListener(e -> {
+                List<? extends model.card.Card> discardPile = game.getTreasureDeck().getDiscardPile();
+                if (discardPile.isEmpty()) {
+                    JOptionPane.showMessageDialog(mainFrame, "Treasure discard pile is empty.", "Treasure Discard Pile", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (model.card.Card card : discardPile) {
+                    sb.append(card.getName()).append("\n");
+                }
+                JTextArea textArea = new JTextArea(sb.toString());
+                textArea.setEditable(false);
+                JScrollPane scrollPane = new JScrollPane(textArea);
+                scrollPane.setPreferredSize(new java.awt.Dimension(300, 200));
+                JOptionPane.showMessageDialog(mainFrame, scrollPane, "Treasure Discard Pile", JOptionPane.INFORMATION_MESSAGE);
+            });
+            mainFrame.getControlPanel().getViewFloodDiscardButton().addActionListener(e -> {
+                List<? extends model.card.Card> discardPile = game.getFloodDeck().getDiscardPile();
+                if (discardPile.isEmpty()) {
+                    JOptionPane.showMessageDialog(mainFrame, "Flood discard pile is empty.", "Flood Discard Pile", JOptionPane.INFORMATION_MESSAGE);
+                    return;
+                }
+                StringBuilder sb = new StringBuilder();
+                for (model.card.Card card : discardPile) {
+                    sb.append(card.getName()).append("\n");
+                }
+                JTextArea textArea = new JTextArea(sb.toString());
+                textArea.setEditable(false);
+                JScrollPane scrollPane = new JScrollPane(textArea);
+                scrollPane.setPreferredSize(new java.awt.Dimension(300, 200));
+                JOptionPane.showMessageDialog(mainFrame, scrollPane, "Flood Discard Pile", JOptionPane.INFORMATION_MESSAGE);
+            });
         }
     }
 

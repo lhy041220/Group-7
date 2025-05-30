@@ -113,10 +113,9 @@ public class GameController {
     private void checkAfterPlayerAction(Player player) {
         // Update UI
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
-
+        mainFrame.updatePlayerHand(player.getHand());
         // Debug info
         System.out.println("Post-action check - Player " + player.getPlayerId() + " remaining actions: " + player.getRemainingActions());
-
         if (player.getRemainingActions() <= 0) {
             mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " has finished all actions!");
             JOptionPane.showMessageDialog(mainFrame,
@@ -210,6 +209,7 @@ public class GameController {
         curr.resetActionsForTurn();
         mainFrame.addConsoleMessage("It's Player " + curr.getPlayerId());
         updateAllUI();
+        mainFrame.updatePlayerHand(curr.getHand());
         // Notify game logic
         game.notifyTurnStarted(curr);
     }
