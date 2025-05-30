@@ -13,24 +13,23 @@ public abstract class SpecialCard extends HandCard {
     }
 
     /**
-     * 检查卡牌是否可以在当前时机使用
-     * @param player 使用卡牌的玩家
-     * @return 是否可以使用
+     * Check whether the card can be used at the current time
+     * @param player A player who uses cards
      */
     public boolean canBeUsedNow(Player player) {
         Game game = Game.getInstance();
 
-        // 如果游戏已经结束，不能使用卡牌
+        // If the game has ended, the cards cannot be used
         if (game.isGameOver()) {
             return false;
         }
 
-        // 如果玩家手牌中没有这张卡，不能使用
+        // If this card is not in the player's hand, it cannot be used
         if (!player.getHand().contains(this)) {
             return false;
         }
 
-        // 检查是否是在抽到洪水卡之后（仅对沙袋卡有影响）
+        // Check whether it is after drawing the flood card (only affecting the sandbag card)
         if (!canBeUsedAfterFlood && game.isAfterFloodCardDrawn()) {
             return false;
         }
@@ -39,19 +38,19 @@ public abstract class SpecialCard extends HandCard {
     }
 
     /**
-     * 使用卡牌的基础方法
+     * The basic method of using cards
      * @param player 使用卡牌的玩家
-     * @return 是否成功使用
+     * @return Whether it was used successfully
      */
     public boolean use(Player player) {
         if (!canBeUsedNow(player)) {
             return false;
         }
 
-        // 执行卡牌效果
+        // Execute the card effect
         useCard(player);
 
-        // 将卡牌放入弃牌堆
+        // Put the cards into the discard pile
         Game.getInstance().getTreasureDeck().discard(this);
 
         return true;

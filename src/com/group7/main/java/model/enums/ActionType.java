@@ -1,15 +1,15 @@
 package model.enums;
 
 /**
- * 玩家可以执行的行动类型
+ * The types of actions that players can perform
  */
 public enum ActionType {
-    MOVE("移动"),
-    SHORE_UP("排水"),
-    GIVE_CARD("给予卡牌"),
-    CAPTURE_TREASURE("获取宝藏"),
-    USE_SPECIAL_ABILITY("使用特殊能力"),
-    USE_SPECIAL_CARD("使用特殊卡牌");
+    MOVE("Move"),
+    SHORE_UP("Drain water"),
+    GIVE_CARD("Give cards"),
+    CAPTURE_TREASURE("Obtain the treasure"),
+    USE_SPECIAL_ABILITY("Use special abilities"),
+    USE_SPECIAL_CARD("Use special cards");
 
     private final String displayName;
 

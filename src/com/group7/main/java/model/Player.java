@@ -8,7 +8,6 @@ import model.enums.ActionType;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,15 +17,14 @@ public class Player {
     private int playerId;
     private Tile currentTile;
 
-    private int actionsPerTurn = 3; // 每回合可执行的行动数
-    private int remainingActions;   // 当前回合剩余的行动数
+    private int actionsPerTurn = 3; // Number of actions per turn
+    private int remainingActions;   // Remaining actions in current turn
     private List<Card> hand;
     private final int MAX_HAND_SIZE = 5;
-    private Role role; // 新增角色字段
+    private Role role; // Player's role
 
     private Set<TreasureType> collectedTreasures;
-    private boolean hasUsedSpecialAbility; // 用于追踪特殊能力的使用情况（比如飞行员每回合只能用一次）
-
+    private boolean hasUsedSpecialAbility; // Tracks special ability use, e.g. the Pilot uses once per turn
 
     public Player(int playerId, Tile startingTile) {
         this.playerId = playerId;
@@ -44,7 +42,7 @@ public class Player {
     }
 
     /**
-     * 重置玩家的回合状态
+     * Reset the player's turn state.
      */
     public void resetActionsForTurn() {
         this.remainingActions = actionsPerTurn;
@@ -52,46 +50,46 @@ public class Player {
     }
 
     /**
-     * 使用一个行动点数
+     * Use one action point.
      */
     public void useAction() {
         if (remainingActions > 0) {
             remainingActions--;
-            // 打印调试信息
-            System.out.println("玩家 " + playerId + " 使用了一个行动点，剩余 " + remainingActions + " 点");
+            // Debug info
+            System.out.println("Player " + playerId + " used one action, " + remainingActions + " actions left.");
         }
     }
 
     /**
-     * 获取剩余行动点数
+     * Get remaining action points.
      */
     public int getRemainingActions() {
         return remainingActions;
     }
 
     /**
-     * 添加卡牌到手中
+     * Add a card to hand.
      */
     public void addCardToHand(Card card) {
         hand.add(card);
     }
 
     /**
-     * 检查手牌是否超出上限
+     * Check if hand size exceeds limit.
      */
     public boolean handExceedsLimit() {
         return hand.size() > MAX_HAND_SIZE;
     }
 
     /**
-     * 丢弃卡牌
+     * Discard a card from hand.
      */
     public void discardCard(Card card) {
         hand.remove(card);
     }
 
     public boolean moveToTile(Tile destinationTile) {
-        System.out.println("moveToTile: 当前=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " 目标=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null"));
+        System.out.println("moveToTile: current=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " target=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null"));
         if (canMoveTo(destinationTile)) {
             if (this.currentTile != null) {
                 this.currentTile.removePlayer(this);
@@ -104,7 +102,7 @@ public class Player {
     }
 
     /**
-     * 检查是否可以移动到目标板块
+     * Check if the player can move to the target tile.
      */
     public boolean canMoveTo(Tile destinationTile) {
         boolean result = false;
@@ -122,12 +120,12 @@ public class Player {
             List<Tile> adjacentTiles = Game.getInstance().getBoard().getAdjacentTiles(currentTile);
             result = adjacentTiles.contains(destinationTile);
         }
-        System.out.println("canMoveTo: 当前=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " 目标=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null") + " 结果=" + (result ? "可移动" : "不可移动"));
+        System.out.println("canMoveTo: current=" + (currentTile != null ? currentTile.getType().getDisplayName() : "null") + " target=" + (destinationTile != null ? destinationTile.getType().getDisplayName() : "null") + " result=" + (result ? "can move" : "cannot move"));
         return result;
     }
 
     /**
-     * 使用特殊卡牌
+     * Use a special card.
      */
     public void useSpecialCard(SpecialCard card) {
         if (hand.contains(card)) {
@@ -137,10 +135,10 @@ public class Player {
     }
 
     /**
-     * 给其他玩家传递卡牌
+     * Give a card to another player.
      */
     public boolean giveCardToPlayer(Player targetPlayer, Card card) {
-        // 信使可以在任何位置给卡
+        // Messenger can give cards anywhere
         if (role == Role.MESSENGER) {
             if (hand.contains(card)) {
                 hand.remove(card);
@@ -148,7 +146,7 @@ public class Player {
                 return true;
             }
         }
-        // 其他角色需要在同一个板块才能给卡
+        // Other roles must be on the same tile to give cards
         else if (currentTile == targetPlayer.getCurrentTile() && hand.contains(card)) {
             hand.remove(card);
             targetPlayer.addCardToHand(card);
@@ -158,21 +156,21 @@ public class Player {
     }
 
     /**
-     * 检查是否收集了特定类型的宝藏
+     * Check if a specific treasure has been collected.
      */
     public boolean hasCollectedTreasure(TreasureType treasureType) {
         return collectedTreasures.contains(treasureType);
     }
 
     /**
-     * 添加收集到的宝藏
+     * Add collected treasure.
      */
     public void addCollectedTreasure(TreasureType treasureType) {
         collectedTreasures.add(treasureType);
     }
 
     /**
-     * 使用特殊能力
+     * Use role's special ability.
      */
     public void useSpecialAbility(Tile destinationTile) {
         if (role != null && remainingActions > 0) {
@@ -185,7 +183,7 @@ public class Player {
     }
 
     /**
-     * 获取玩家当前可以给出的宝藏卡
+     * Get all treasure cards that can be given.
      */
     public List<TreasureCard> getGiveableTreasureCards() {
         List<TreasureCard> giveableCards = new ArrayList<>();
@@ -198,9 +196,9 @@ public class Player {
     }
 
     /**
-     * 尝试排水行动
-     * @param tile 目标板块
-     * @return 是否成功排水
+     * Try to shore up a tile.
+     * @param tile Target tile
+     * @return Whether shore up is successful
      */
     public boolean shoreUp(Tile tile) {
         if (canShoreUp(tile) && remainingActions > 0) {
@@ -212,38 +210,38 @@ public class Player {
     }
 
     /**
-     * 检查是否可以在目标板块排水
+     * Check if the player can shore up the target tile.
      */
     public boolean canShoreUp(Tile tile) {
         if (tile == null || !tile.isFlooded()) {
             return false;
         }
 
-        // 工程师可以一次行动排干两个板块的水
+        // Engineer can shore up two tiles with one action
         if (role == Role.ENGINEER) {
             List<Tile> reachableTiles = Game.getInstance().getBoard().getAdjacentTiles(currentTile);
             return reachableTiles.contains(tile) || tile == currentTile;
         }
 
-        // 探险家可以对角线排水
+        // Explorer can shore up diagonally
         if (role == Role.EXPLORER) {
             List<Tile> reachableTiles = Game.getInstance().getBoard().getDiagonalAndOrthogonalTiles(currentTile);
             return reachableTiles.contains(tile) || tile == currentTile;
         }
 
-        // 普通角色只能对相邻或当前板块排水
+        // Other roles can shore up only adjacent or current tile
         List<Tile> adjacentTiles = Game.getInstance().getBoard().getAdjacentTiles(currentTile);
         return adjacentTiles.contains(tile) || tile == currentTile;
     }
 
     /**
-     * 尝试获取宝藏
-     * @param treasureType 宝藏类型
-     * @return 是否成功获取宝藏
+     * Attempt to capture a treasure.
+     * @param treasureType The type of treasure
+     * @return Whether the treasure was successfully captured
      */
     public boolean captureTreasure(TreasureType treasureType) {
         if (canCaptureTreasure(treasureType) && remainingActions > 0) {
-            // 移除4张对应的宝藏卡
+            // Remove 4 corresponding treasure cards
             int count = 0;
             List<Card> cardsToRemove = new ArrayList<>();
 
@@ -266,19 +264,19 @@ public class Player {
     }
 
     /**
-     * 检查是否可以获取宝藏
+     * Check if the treasure can be captured.
      */
     public boolean canCaptureTreasure(TreasureType treasureType) {
         if (treasureType == null || treasureType == TreasureType.NONE) {
             return false;
         }
 
-        // 检查是否在对应的宝藏板块上
+        // Check if on the corresponding treasure tile
         if (!currentTile.hasTreasure(treasureType)) {
             return false;
         }
 
-        // 检查是否有足够的宝藏卡
+        // Check if there are enough treasure cards
         int treasureCardCount = 0;
         for (Card card : hand) {
             if (card instanceof TreasureCard && ((TreasureCard) card).getTreasureType() == treasureType) {
@@ -290,33 +288,33 @@ public class Player {
     }
 
     /**
-     * 获取当前可执行的所有行动
+     * Get all possible actions player can currently execute.
      */
     public List<PossibleAction> getAvailableActions() {
         List<PossibleAction> actions = new ArrayList<>();
 
-        // 检查可移动的位置
+        // Check possible moves
         for (Tile tile : Game.getInstance().getBoard().getAdjacentTiles(currentTile)) {
             if (canMoveTo(tile)) {
                 actions.add(new PossibleAction(ActionType.MOVE, tile));
             }
         }
 
-        // 检查可排水的位置
+        // Check possible shore up actions
         for (Tile tile : Game.getInstance().getBoard().getAdjacentTiles(currentTile)) {
             if (canShoreUp(tile)) {
                 actions.add(new PossibleAction(ActionType.SHORE_UP, tile));
             }
         }
 
-        // 检查是否可以获取宝藏
+        // Check if can capture treasure
         for (TreasureType treasureType : TreasureType.values()) {
             if (canCaptureTreasure(treasureType)) {
                 actions.add(new PossibleAction(ActionType.CAPTURE_TREASURE, treasureType));
             }
         }
 
-        // 检查是否可以给其他玩家传递宝藏卡
+        // Check if can give treasure cards to other players
         List<TreasureCard> giveableCards = getGiveableTreasureCards();
         if (!giveableCards.isEmpty()) {
             for (Player otherPlayer : Game.getInstance().getPlayers()) {
@@ -330,15 +328,15 @@ public class Player {
     }
 
     /**
-     * 检查是否可以收集宝藏
+     * Check if the player can collect a treasure on current tile.
      */
     public boolean canCollectTreasure() {
-        // 检查当前位置是否有宝藏
-        if (currentTile == null || !currentTile.hasTreasure(null)) {
+        // Check if current tile has a treasure
+        if (currentTile == null || currentTile.getTreasure() == TreasureType.NONE) {
             return false;
         }
 
-        // 检查是否有足够的宝藏卡
+        // Check if there are enough treasure cards
         TreasureType tileType = currentTile.getTreasure();
         int count = 0;
         for (Card card : hand) {
@@ -350,7 +348,7 @@ public class Player {
     }
 
     /**
-     * 收集宝藏
+     * Collect the treasure on the current tile.
      */
     public boolean collectTreasure() {
         if (!canCollectTreasure()) {
@@ -361,7 +359,7 @@ public class Player {
         List<Card> cardsToRemove = new ArrayList<>();
         int count = 0;
 
-        // 找出要移除的宝藏卡
+        // Find the cards to remove
         for (Card card : hand) {
             if (card instanceof TreasureCard && ((TreasureCard) card).getTreasureType() == tileType) {
                 cardsToRemove.add(card);
@@ -372,7 +370,7 @@ public class Player {
             }
         }
 
-        // 移除宝藏卡并添加收集的宝藏
+        // Remove cards and add collected treasure
         if (count >= 4) {
             hand.removeAll(cardsToRemove);
             addCollectedTreasure(tileType);
@@ -381,5 +379,6 @@ public class Player {
 
         return false;
     }
-}  
+}
+
 

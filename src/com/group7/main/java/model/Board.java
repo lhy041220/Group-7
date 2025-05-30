@@ -5,7 +5,6 @@ import model.enums.TreasureType;
 import model.card.Card;
 import model.card.TreasureCard;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
@@ -13,20 +12,19 @@ import java.util.Queue;
 import java.util.HashSet;
 import java.util.LinkedList;
 
-
 /**
- * 代表禁闭岛游戏板
+ * Represents the Forbidden Island game board.
  */
 public class Board {
-    private Tile[][] tileTable; // 二维数组表示游戏板
-    private final int rows = 6; // 行数
-    private final int cols = 6; // 列数
-    private List<Tile> floodedTiles; // 已经被淹没的Tile
-    private List<Tile> sunkTiles; // 已经沉没的Tile
+    private Tile[][] tileTable; // 2D array representing the game board
+    private final int rows = 6; // Number of rows
+    private final int cols = 6; // Number of columns
+    private List<Tile> floodedTiles; // List of flooded tiles
+    private List<Tile> sunkTiles; // List of sunk tiles
     private Random random;
 
     /**
-     * 构造函数，初始化游戏板
+     * Constructor, initializes the game board.
      */
     public Board() {
         tileTable = new Tile[rows][cols];
@@ -37,28 +35,28 @@ public class Board {
     }
 
     /**
-     * 初始化游戏板，创建所有的Tile
+     * Initializes the game board and creates all tiles.
      */
     private void initializeBoard() {
-        //初始化所有位置为null
+        // Initialize all positions as null
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 tileTable[i][j] = null;
             }
         }
 
-        // 创建特定位置的板块，并设置宝藏位置
-        // 第一行（2个板块）
+        // Create specific tiles and set treasure locations
+        // First row (2 tiles)
         tileTable[0][2] = Tile.createTileForType(TileType.WHISPERING_GARDEN, 0, 2, TreasureType.WIND);
         tileTable[0][3] = Tile.createTileForType(TileType.HOWLING_GARDEN, 0, 3);
 
-        // 第二行（4个板块）
+        // Second row (4 tiles)
         tileTable[1][1] = Tile.createTileForType(TileType.TIDAL_PALACE, 1, 1, TreasureType.OCEAN);
         tileTable[1][2] = Tile.createTileForType(TileType.LOST_LAGOON, 1, 2);
         tileTable[1][3] = Tile.createTileForType(TileType.PHANTOM_ROCK, 1, 3);
         tileTable[1][4] = Tile.createTileForType(TileType.SILVER_GATE, 1, 4);
 
-        // 第三行（6个板块）
+        // Third row (6 tiles)
         tileTable[2][0] = Tile.createTileForType(TileType.CRIMSON_FOREST, 2, 0, TreasureType.FIRE);
         tileTable[2][1] = Tile.createTileForType(TileType.DUNES_OF_DECEPTION, 2, 1);
         tileTable[2][2] = Tile.createTileForType(TileType.WATCHTOWER, 2, 2);
@@ -66,7 +64,7 @@ public class Board {
         tileTable[2][4] = Tile.createTileForType(TileType.CAVE_OF_SHADOWS, 2, 4);
         tileTable[2][5] = Tile.createTileForType(TileType.CAVE_OF_EMBERS, 2, 5, TreasureType.FIRE);
 
-        // 第四行（6个板块）
+        // Fourth row (6 tiles)
         tileTable[3][0] = Tile.createTileForType(TileType.TEMPLE_OF_THE_MOON, 3, 0);
         tileTable[3][1] = Tile.createTileForType(TileType.TEMPLE_OF_THE_SUN, 3, 1);
         tileTable[3][2] = Tile.createTileForType(TileType.CORAL_PALACE, 3, 2, TreasureType.OCEAN);
@@ -74,19 +72,19 @@ public class Board {
         tileTable[3][4] = Tile.createTileForType(TileType.MISTY_MARSH, 3, 4);
         tileTable[3][5] = Tile.createTileForType(TileType.COPPER_GATE, 3, 5);
 
-        // 第五行（4个板块）
+        // Fifth row (4 tiles)
         tileTable[4][1] = Tile.createTileForType(TileType.IRON_GATE, 4, 1, TreasureType.EARTH);
         tileTable[4][2] = Tile.createTileForType(TileType.BRONZE_GATE, 4, 2);
         tileTable[4][3] = Tile.createTileForType(TileType.IRON_GATE, 4, 3, TreasureType.EARTH);
         tileTable[4][4] = Tile.createTileForType(TileType.FOOLS_LANDING, 4, 4);
 
-        // 第六行（2个板块）
+        // Sixth row (2 tiles)
         tileTable[5][2] = Tile.createTileForType(TileType.TWILIGHT_HOLLOW, 5, 2);
         tileTable[5][3] = Tile.createTileForType(TileType.WATCHTOWER, 5, 3);
     }
 
     /**
-     * 判断两个Tile是否相邻，同一个点会被认作是相邻的
+     * Checks if two tiles are adjacent. The same position is considered adjacent.
      */
     private static boolean isAdjacentTo(int row1, int col1, int row2, int col2) {
         int rowDiff = Math.abs(row1 - row2);
@@ -94,13 +92,13 @@ public class Board {
         return (rowDiff == 1 && colDiff == 0) || (rowDiff == 0 && colDiff == 1) || (rowDiff == 0 && colDiff == 0);
     }
 
-    // 检查愚者着陆点是否沉没
+    // Check if Fool's Landing (helipad) is sunk
     public boolean isHelipadSunk() {
         Tile helipad = getTileByType(TileType.FOOLS_LANDING);
         return helipad == null || helipad.isSunk();
     }
 
-    // 检查某个宝藏的两块板是否全部沉没
+    // Check if all tiles for a specific treasure are sunk
     public boolean isAllTreasureTilesSunk(TreasureType treasureType) {
         int total = 0, sunk = 0;
         for (Tile tile : getAllTiles()) {
@@ -109,22 +107,22 @@ public class Board {
                 if (tile.isSunk()) sunk++;
             }
         }
-        // 只要两块全沉即可，通常有两块
+        // Both tiles must be sunk (usually there are two tiles for each treasure)
         return total > 0 && sunk == total;
     }
 
     /**
-     * 根据坐标获取Tile
+     * Returns the tile at the specified coordinates.
      */
     public Tile getTile(int row, int col) {
         if (row < 0 || row >= rows || col < 0 || col >= cols) {
-            throw new IllegalArgumentException("错误的tile的坐标");
+            throw new IllegalArgumentException("Incorrect coordinates of the tile");
         }
         return tileTable[row][col];
     }
 
     /**
-     * 获取特定名称的Tile
+     * Returns the tile of a specific type.
      */
     public Tile getTileByType(TileType tileType) {
         for (int row = 0; row < rows; row++) {
@@ -138,7 +136,7 @@ public class Board {
     }
 
     /**
-     * 获取所有非null的Tile
+     * Returns all non-null tiles.
      */
     public List<Tile> getAllTiles() {
         List<Tile> allTiles = new ArrayList<>();
@@ -153,21 +151,21 @@ public class Board {
     }
 
     /**
-     * 获取所有已经被淹没但未沉没的Tile
+     * Returns all flooded, but not yet sunk, tiles.
      */
     public List<Tile> getFloodedTiles() {
         return new ArrayList<>(floodedTiles);
     }
 
     /**
-     * 获取所有已经沉没的Tile
+     * Returns all sunk tiles.
      */
     public List<Tile> getSunkTiles() {
         return new ArrayList<>(sunkTiles);
     }
 
     /**
-     * 淹没一个Tile
+     * Floods a tile.
      */
     public void floodTile(Tile tile) {
         if (tile != null && !tile.isFlooded() && !tile.isSunk()) {
@@ -177,20 +175,20 @@ public class Board {
     }
 
     /**
-     * 使一个Tile沉没
+     * Sinks a tile.
      */
     public void sinkTile(Tile tile) {
         if (tile != null && tile.isFlooded()) {
             tile.sink();
             floodedTiles.remove(tile);
             sunkTiles.add(tile);
-            // 在二维数组中将此Tile设置为null（沉没的tile不会被恢复）
+            // Optionally, set the tile to null in the 2D array (sunk tiles are not restored)
             // tileTable[tile.getRow()][tile.getCol()] = null;
         }
     }
 
     /**
-     * 使一个已经被淹没的Tile恢复正常
+     * Dries (shores up) a flooded tile.
      */
     public void dryTile(Tile tile) {
         if (tile != null && tile.isFlooded()) {
@@ -200,26 +198,26 @@ public class Board {
     }
 
     /**
-     * 获取与指定瓦片相邻的所有瓦片（上下左右）
+     * Returns all tiles adjacent (up, down, left, right) to the specified tile.
      */
     public List<Tile> getAdjacentTiles(Tile tile) {
         List<Tile> adjacentTiles = new ArrayList<>();
         int row = tile.getRow();
         int col = tile.getCol();
 
-        // 上
+        // Up
         if (row > 0 && tileTable[row-1][col] != null) {
             adjacentTiles.add(tileTable[row-1][col]);
         }
-        // 下
+        // Down
         if (row < rows-1 && tileTable[row+1][col] != null) {
             adjacentTiles.add(tileTable[row+1][col]);
         }
-        // 左
+        // Left
         if (col > 0 && tileTable[row][col-1] != null) {
             adjacentTiles.add(tileTable[row][col-1]);
         }
-        // 右
+        // Right
         if (col < cols-1 && tileTable[row][col+1] != null) {
             adjacentTiles.add(tileTable[row][col+1]);
         }
@@ -227,17 +225,17 @@ public class Board {
     }
 
     /**
-     * 获取与指定瓦片相邻的所有瓦片（包括对角线）
+     * Returns all tiles adjacent, including diagonals, to the specified tile.
      */
     public List<Tile> getDiagonalAndOrthogonalTiles(Tile tile) {
         List<Tile> allTiles = new ArrayList<>();
         int row = tile.getRow();
         int col = tile.getCol();
 
-        // 遍历3x3范围内的所有格子（除了中心点自己）
+        // Scan all cells in a 3x3 area (excluding the center itself)
         for (int i = -1; i <= 1; i++) {
             for (int j = -1; j <= 1; j++) {
-                if (i == 0 && j == 0) continue; // 跳过中心点
+                if (i == 0 && j == 0) continue; // Skip the center point
 
                 int newRow = row + i;
                 int newCol = col + j;
@@ -252,7 +250,7 @@ public class Board {
     }
 
     /**
-     * 获取所有可到达的瓦片（用于潜水员）
+     * Returns all reachable tiles for the Diver (i.e., can traverse flooded and sunk tiles).
      */
     public List<Tile> getReachableTilesForDiver(Tile startTile) {
         List<Tile> reachableTiles = new ArrayList<>();
@@ -269,7 +267,7 @@ public class Board {
                 if (!visited.contains(adjacent)) {
                     if (adjacent.isNavigable() || adjacent.isFlooded() || adjacent.isSunk()) {
                         reachableTiles.add(adjacent);
-                        // 如果是被淹没或沉没的瓦片，继续搜索
+                        // Continue searching if the tile is flooded or sunk
                         if (adjacent.isFlooded() || adjacent.isSunk()) {
                             queue.add(adjacent);
                         }
@@ -282,7 +280,7 @@ public class Board {
     }
 
     /**
-     * 获取所有未沉没的瓦片（用于飞行员）
+     * Returns all tiles that are not sunk (for the Pilot).
      */
     public List<Tile> getAllNavigableTiles() {
         List<Tile> navigableTiles = new ArrayList<>();
@@ -297,16 +295,16 @@ public class Board {
     }
 
     /**
-     * 检查游戏是否结束（特定的重要Tile是否沉没）
+     * Checks if the game is over (if specific important tiles are sunk).
      */
     public boolean isGameOver() {
-        // 这里可以实现检查游戏结束的逻辑
-        // 例如，如果"愚者宝藏"Tile已经沉没，游戏结束
-        throw new UnsupportedOperationException("Board类的方法isGameOver()没有实现");
+        // TODO: Implement game over logic
+        // Example: If the Fool's Landing tile is sunk, the game is over
+        throw new UnsupportedOperationException("The method isGameOver() of the Board class is not implemented");
     }
 
     /**
-     * 打印游戏板的当前状态（用于调试）
+     * Prints the current state of the board (for debugging).
      */
     public void printBoard() {
         for (int row = 0; row < rows; row++) {
@@ -326,7 +324,7 @@ public class Board {
     }
 
     /**
-     * 获取指定宝藏类型的所有板块
+     * Returns all tiles corresponding to the specified treasure type.
      */
     public List<Tile> getTreasureTiles(TreasureType treasureType) {
         List<Tile> treasureTiles = new ArrayList<>();
@@ -339,19 +337,19 @@ public class Board {
     }
 
     /**
-     * 检查是否可以在指定板块获取宝藏
+     * Checks if the player can collect treasure on the specified tile.
      */
     public boolean canCaptureTreasure(Tile tile, Player player) {
         if (tile == null || tile.getTreasure() == TreasureType.NONE || tile.isSunk()) {
             return false;
         }
 
-        // 检查玩家是否在该板块上
+        // Check if the player is on this tile
         if (player.getCurrentTile() != tile) {
             return false;
         }
 
-        // 计算玩家手中对应类型的宝藏卡数量
+        // Count the number of related treasure cards in the player's hand
         int treasureCardCount = 0;
         for (Card card : player.getHand()) {
             if (card instanceof TreasureCard) {
@@ -362,12 +360,12 @@ public class Board {
             }
         }
 
-        // 需要4张相同类型的宝藏卡
+        // Need at least 4 of the same type of treasure card
         return treasureCardCount >= 4;
     }
 
     /**
-     * 检查指定宝藏是否还可以获得（是否有未沉没的宝藏板块）
+     * Checks if the specified treasure is still collectible (i.e., has remaining non-sunk treasure tiles).
      */
     public boolean isTreasureAvailable(TreasureType treasureType) {
         for (Tile tile : getTreasureTiles(treasureType)) {
@@ -379,7 +377,7 @@ public class Board {
     }
 
     /**
-     * 根据行列获取板块
+     * Returns the tile at the specified row and column.
      */
     public Tile getTileAt(int row, int col) {
         if (row >= 0 && row < 6 && col >= 0 && col < 6) {
@@ -399,4 +397,3 @@ public class Board {
         return null;
     }
 }
-

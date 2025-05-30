@@ -17,13 +17,13 @@ public class GameBoardPanel extends JPanel {
     private final int GRID_SIZE = 6;
     private final int GAP = 5;
 
-    // 定义不同状态的颜色
-    private final Color NORMAL_COLOR = new Color(144, 238, 144); // 浅绿色
-    private final Color FLOODED_COLOR = new Color(135, 206, 250); // 浅蓝色
-    private final Color SUNKEN_COLOR = new Color(25, 25, 112);    // 深蓝色
-    private final Color EMPTY_COLOR = new Color(0, 0, 0, 0);      // 透明（用于角落的空位）
+    // Colors for different tile states
+    private final Color NORMAL_COLOR = new Color(144, 238, 144);   // Light green
+    private final Color FLOODED_COLOR = new Color(135, 206, 250);  // Light blue
+    private final Color SUNKEN_COLOR = new Color(25, 25, 112);     // Dark blue
+    private final Color EMPTY_COLOR = new Color(0, 0, 0, 0);       // Transparent (for empty corners)
 
-    private final int HORIZONTAL_MARGIN = 150; // 添加水平边距使版图居中
+    private final int HORIZONTAL_MARGIN = 150; // Horizontal margin to center the board
 
     @Setter
     private TileClickListener tileClickListener;
@@ -65,16 +65,16 @@ public class GameBoardPanel extends JPanel {
     public GameBoardPanel() {
         this.tilePanels = new JPanel[GRID_SIZE][GRID_SIZE];
 
-        setLayout(null); // 使用绝对布局
-        // 增加面板宽度以容纳水平边距
+        setLayout(null); // Use absolute layout
+        // Panel width increased to accommodate horizontal margin
         setPreferredSize(new Dimension(GRID_SIZE * (TILE_SIZE + GAP) + GAP + HORIZONTAL_MARGIN * 2,
                 GRID_SIZE * (TILE_SIZE + GAP) + GAP));
-        setBackground(new Color(0, 50, 100)); // 深蓝色背景代表海洋
+        setBackground(new Color(0, 50, 100)); // Deep blue ocean background
         initializeTilePanels();
     }
 
     /**
-     * 初始化所有瓦片面板
+     * Initialize all tile panels
      */
     private void initializeTilePanels() {
         for (int row = 0; row < GRID_SIZE; row++) {
@@ -94,7 +94,7 @@ public class GameBoardPanel extends JPanel {
                     public void mouseClicked(MouseEvent e) {
                         if (currentMode == Mode.MOVE && tileClickListener != null) {
                             tileClickListener.onTileClicked(finalRow, finalCol);
-                            setMode(Mode.NORMAL); // 移动后自动退出移动模式
+                            setMode(Mode.NORMAL); // Exit move mode automatically after moving
                         } else if (tileClickListener != null) {
                             tileClickListener.onTileClicked(finalRow, finalCol);
                         }
@@ -108,7 +108,7 @@ public class GameBoardPanel extends JPanel {
     }
 
     /**
-     * 根据Board对象更新游戏板显示
+     * Update the game board display according to the Board object
      */
     public void updateBoard(Board board) {
         for (int row = 0; row < GRID_SIZE; row++) {
@@ -117,7 +117,7 @@ public class GameBoardPanel extends JPanel {
                     Tile tile = board.getTile(row, col);
                     updateTilePanel(row, col, tile);
                 } catch (IllegalArgumentException e) {
-                    // 处理空瓦片（角落处没有瓦片）
+                    // Handle empty tiles (corners have no tile)
                     tilePanels[row][col].setBackground(EMPTY_COLOR);
                     tilePanels[row][col].setOpaque(false);
                     tilePanels[row][col].removeAll();
@@ -130,7 +130,7 @@ public class GameBoardPanel extends JPanel {
     }
 
     /**
-     * 更新单个瓦片面板的显示
+     * Update the display for a single tile panel
      */
     private void updateTilePanel(int row, int col, Tile tile) {
         JPanel tilePanel = tilePanels[row][col];
@@ -142,7 +142,7 @@ public class GameBoardPanel extends JPanel {
             return;
         }
 
-        // 根据瓦片状态设置颜色
+        // Set color based on tile state
         if (tile.isSunk()) {
             tilePanel.setBackground(SUNKEN_COLOR);
             tilePanel.setOpaque(true);
@@ -154,7 +154,7 @@ public class GameBoardPanel extends JPanel {
             tilePanel.setOpaque(true);
         }
 
-        // 加载并显示图片
+        // Load and display the tile image
         try {
             String imagePath = "src/com/group7/resources/images/Tiles/" + tile.getType().getImagePath();
             ImageIcon icon = new ImageIcon(imagePath);
@@ -163,27 +163,27 @@ public class GameBoardPanel extends JPanel {
             imgLabel.setHorizontalAlignment(SwingConstants.CENTER);
             tilePanel.add(imgLabel, BorderLayout.CENTER);
         } catch (Exception e) {
-            // 图片加载失败时忽略
+            // Ignore if the image fails to load
         }
 
-        // 添加瓦片类型名称标签
+        // Add the tile type name label
         JLabel nameLabel = new JLabel(tile.getType().getDisplayName());
         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        nameLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK); // 沉没瓦片用白色文字
+        nameLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK); // Use white for sunken tiles
         tilePanel.add(nameLabel, BorderLayout.SOUTH);
 
-        // 添加瓦片状态标签
+        // Add tile state label
         JLabel stateLabel = new JLabel();
         if (tile.isFlooded()) {
-            stateLabel.setText("已淹没");
+            stateLabel.setText("Flooded");
         } else if (tile.isSunk()) {
-            stateLabel.setText("已沉没");
+            stateLabel.setText("Sunken");
         }
         stateLabel.setHorizontalAlignment(SwingConstants.CENTER);
         stateLabel.setForeground(tile.isSunk() ? Color.WHITE : Color.BLACK);
         tilePanel.add(stateLabel, BorderLayout.NORTH);
 
-        // 如果有宝藏类型且不是NONE，显示宝藏信息
+        // Show treasure info if present
         if (tile.getTreasure() != null && tile.getTreasure() != TreasureType.NONE) {
             JLabel treasureLabel = new JLabel(tile.getTreasure().toString());
             treasureLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -191,7 +191,7 @@ public class GameBoardPanel extends JPanel {
             tilePanel.add(treasureLabel, BorderLayout.WEST);
         }
 
-        // 新增：显示玩家
+        // Show players on this tile
         java.util.List<model.Player> players = tile.getPlayersOnTile();
         if (players != null && !players.isEmpty()) {
             JPanel playerPanel = new JPanel();
@@ -201,7 +201,7 @@ public class GameBoardPanel extends JPanel {
             for (model.Player p : players) {
                 JLabel playerDot = new JLabel("●");
                 playerDot.setForeground(colors[(p.getPlayerId() - 1) % colors.length]);
-                playerDot.setToolTipText("玩家" + p.getPlayerId());
+                playerDot.setToolTipText("Player " + p.getPlayerId());
                 playerPanel.add(playerDot);
             }
             tilePanel.add(playerPanel, BorderLayout.EAST);
@@ -209,7 +209,7 @@ public class GameBoardPanel extends JPanel {
     }
 
     /**
-     * 获取特定位置的瓦片面板
+     * Get the tile panel at a specific position
      */
     public JPanel getTilePanel(int row, int col) {
         if (row >= 0 && row < GRID_SIZE && col >= 0 && col < GRID_SIZE) {
@@ -222,3 +222,4 @@ public class GameBoardPanel extends JPanel {
         return highlightedTiles.contains(row + "," + col);
     }
 }
+

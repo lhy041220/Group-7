@@ -9,7 +9,7 @@ import model.Game;
 import model.card.Card;
 
 /***
- * 玩家行动面板
+ * Player action panel
  */
 @Getter
 public class ControlPanel extends JPanel {
@@ -22,12 +22,12 @@ public class ControlPanel extends JPanel {
     private JButton viewTreasureDiscardButton;
     private JButton viewFloodDiscardButton;
 
-    // 按钮样式相关的常量
-    private static final Color BUTTON_BACKGROUND = new Color(51, 122, 183);  // 蓝色
-    private static final Color BUTTON_HOVER = new Color(40, 96, 144);       // 深蓝色
-    private static final Color END_TURN_BACKGROUND = new Color(217, 83, 79); // 红色
-    private static final Color END_TURN_HOVER = new Color(172, 66, 63);     // 深红色
-    private static final Font BUTTON_FONT = new Font("微软雅黑", Font.BOLD, 14);
+    // Button style related constants
+    private static final Color BUTTON_BACKGROUND = new Color(51, 122, 183);   // Blue
+    private static final Color BUTTON_HOVER = new Color(40, 96, 144);         // Dark blue
+    private static final Color END_TURN_BACKGROUND = new Color(217, 83, 79);  // Red
+    private static final Color END_TURN_HOVER = new Color(172, 66, 63);       // Dark red
+    private static final Font BUTTON_FONT = new Font("Arial", Font.BOLD, 14);
     private static final Dimension BUTTON_SIZE = new Dimension(140, 35);
     private static final int BUTTON_SPACING = 10;
 
@@ -42,13 +42,15 @@ public class ControlPanel extends JPanel {
     }
 
     private void initializeButtons() {
-        moveButton = createActionButton("移动", BUTTON_BACKGROUND, BUTTON_HOVER);
-        shoreUpButton = createActionButton("排水", BUTTON_BACKGROUND, BUTTON_HOVER);
-        giveCardButton = createActionButton("给予卡牌", BUTTON_BACKGROUND, BUTTON_HOVER);
-        captureTreasureButton = createActionButton("获取宝藏", BUTTON_BACKGROUND, BUTTON_HOVER);
-        endTurnButton = createActionButton("结束回合", END_TURN_BACKGROUND, END_TURN_HOVER);
-        viewTreasureDiscardButton = new JButton("查看宝藏卡弃牌堆");
-        viewFloodDiscardButton = new JButton("查看洪水卡弃牌堆");
+        moveButton = createActionButton("Move", BUTTON_BACKGROUND, BUTTON_HOVER);
+        shoreUpButton = createActionButton("Shore Up", BUTTON_BACKGROUND, BUTTON_HOVER);
+        giveCardButton = createActionButton("Give Card", BUTTON_BACKGROUND, BUTTON_HOVER);
+        captureTreasureButton = createActionButton("Capture Treasure", BUTTON_BACKGROUND, BUTTON_HOVER);
+        endTurnButton = createActionButton("End Turn", END_TURN_BACKGROUND, END_TURN_HOVER);
+        viewTreasureDiscardButton = new JButton("View Treasure Discard Pile");
+        viewFloodDiscardButton = new JButton("View Flood Discard Pile");
+        viewTreasureDiscardButton.setFont(BUTTON_FONT);
+        viewFloodDiscardButton.setFont(BUTTON_FONT);
     }
 
     private JButton createActionButton(String text, Color normalColor, Color hoverColor) {
@@ -91,26 +93,26 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * 添加控制按钮
+     * Add control buttons to panel
      */
     private void addControlButtons() {
         add(moveButton);
         add(shoreUpButton);
         add(giveCardButton);
         add(captureTreasureButton);
-        add(Box.createHorizontalStrut(20)); // 在结束回合按钮前添加一些间距
+        add(Box.createHorizontalStrut(20)); // Add spacing before End Turn button
         add(endTurnButton);
         add(viewTreasureDiscardButton);
         add(viewFloodDiscardButton);
 
-        // 为弃牌堆按钮添加事件
+        // Add discard pile button events
         viewTreasureDiscardButton.addActionListener(e -> {
             List<? extends Card> handCards = Game.getInstance().getTreasureDeck().getDiscardPile();
-            showDiscardPile("宝藏卡弃牌堆", new java.util.ArrayList<Card>(handCards));
+            showDiscardPile("Treasure Discard Pile", new java.util.ArrayList<Card>(handCards));
         });
         viewFloodDiscardButton.addActionListener(e -> {
             List<? extends Card> floodCards = Game.getInstance().getFloodDeck().getDiscardPile();
-            showDiscardPile("洪水卡弃牌堆", new java.util.ArrayList<Card>(floodCards));
+            showDiscardPile("Flood Discard Pile", new java.util.ArrayList<Card>(floodCards));
         });
     }
 
@@ -124,8 +126,8 @@ public class ControlPanel extends JPanel {
     }
 
     /**
-     * 设置所有按钮的启用状态
-     * @param enabled 是否启用按钮
+     * Enable or disable all control buttons
+     * @param enabled whether to enable buttons
      */
     public void setButtonsEnabled(boolean enabled) {
         moveButton.setEnabled(enabled);

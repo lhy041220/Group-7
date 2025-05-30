@@ -7,21 +7,21 @@ import model.GameEventListener;
 
 public class WaterRiseCard extends SpecialCard {
     public WaterRiseCard() {
-        super("水位上升", "水位上升一格，并将洪水牌弃牌堆洗牌后放在洪水牌库顶部");
-        this.canBeUsedAnytime = false; // 水位上升卡不能主动使用
+        super("The water level rises.", "When the water level rises by one notch, shuffle the flood card discard pile and place it on top of the flood card deck");
+        this.canBeUsedAnytime = false; // The water level rise card cannot be used actively
     }
 
     @Override
     public void useCard(Player player) {
         Game game = Game.getInstance();
 
-        // 1. 水位上升
+        // The water level rises
         game.getWaterLevel().tryRise();
 
-        // 2. 洗牌洪水牌弃牌堆并放到牌库顶部
+        // 2. Shuffle the flood card discard pile and place it on the top of the deck
         game.getFloodDeck().reshuffleDiscardPile();
 
-        // 3. 通知监听器
+        // 3. Notify the listener
         for (GameEventListener listener : game.getEventListeners()) {
             listener.onFloodDeckReshuffled();
         }
@@ -29,6 +29,6 @@ public class WaterRiseCard extends SpecialCard {
 
     @Override
     public boolean canBeUsedNow(Player player) {
-        return false; // 水位上升卡永远不能主动使用
+        return false; // The water level rise card can never be used actively
     }
 }

@@ -1,35 +1,34 @@
 package view.gamePanel;
 
 import model.Player;
-import model.enums.Role;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 public class PlayerInfoPanel extends JPanel {
-    private static final Color ACTIVE_PLAYER_COLOR = new Color(230, 230, 250); // 淡紫色背景
-    private static final int PLAYER_PANEL_HEIGHT = 120; // 增加玩家面板高度以容纳更多信息
+    private static final Color ACTIVE_PLAYER_COLOR = new Color(230, 230, 250); // Light purple for active player
+    private static final int PLAYER_PANEL_HEIGHT = 120; // Height increased to fit more info
 
     public PlayerInfoPanel() {
         setPreferredSize(new Dimension(250, 600));
-        setBackground(new Color(245, 245, 245)); // 浅灰色背景
+        setBackground(new Color(245, 245, 245)); // Light gray background
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.GRAY),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
         ));
 
-        // 添加标题
-        JLabel titleLabel = new JLabel("玩家信息");
-        titleLabel.setFont(new Font("微软雅黑", Font.BOLD, 16));
+        // Title
+        JLabel titleLabel = new JLabel("Player Info");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
         titleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         add(titleLabel);
         add(Box.createVerticalStrut(10));
     }
 
     public void updatePlayerInfos(List<Player> players, int currentIdx) {
-        // 保留标题
+        // Keep the title at the top
         Component titleLabel = getComponent(0);
         Component strut = getComponent(1);
         removeAll();
@@ -40,10 +39,10 @@ public class PlayerInfoPanel extends JPanel {
             Player p = players.get(i);
             boolean isCurrentPlayer = (i == currentIdx);
 
-            // 创建玩家信息面板
+            // Create player info panel
             JPanel playerPanel = createPlayerInfoPanel(p, isCurrentPlayer);
             add(playerPanel);
-            add(Box.createVerticalStrut(10)); // 面板之间的间距
+            add(Box.createVerticalStrut(10));
         }
 
         revalidate();
@@ -61,36 +60,36 @@ public class PlayerInfoPanel extends JPanel {
         panel.setMaximumSize(new Dimension(Integer.MAX_VALUE, PLAYER_PANEL_HEIGHT));
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // 玩家ID和当前状态
-        JLabel nameLabel = new JLabel(String.format("玩家 %d %s",
+        // Player ID and current turn status
+        JLabel nameLabel = new JLabel(String.format("Player %d %s",
                 player.getPlayerId(),
-                isCurrentPlayer ? "（行动中）" : ""));
-        nameLabel.setFont(new Font("微软雅黑", isCurrentPlayer ? Font.BOLD : Font.PLAIN, 14));
+                isCurrentPlayer ? "(Current Turn)" : ""));
+        nameLabel.setFont(new Font("Arial", isCurrentPlayer ? Font.BOLD : Font.PLAIN, 14));
         nameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // 角色信息
-        JLabel roleLabel = new JLabel(String.format("角色：%s",
-                player.getRole() != null ? player.getRole().getDisplayName() : "未分配"));
+        // Role information
+        JLabel roleLabel = new JLabel(String.format("Role: %s",
+                player.getRole() != null ? player.getRole().getDisplayName() : "Unassigned"));
         roleLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // 当前位置
-        JLabel locationLabel = new JLabel(String.format("位置：%s",
-                player.getCurrentTile() != null ? player.getCurrentTile().getType().getDisplayName() : "未知"));
+        // Current location
+        JLabel locationLabel = new JLabel(String.format("Location: %s",
+                player.getCurrentTile() != null ? player.getCurrentTile().getType().getDisplayName() : "Unknown"));
         locationLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // 剩余行动点数（仅显示当前玩家的）
+        // Remaining actions (only for current player)
         if (isCurrentPlayer) {
-            JLabel actionLabel = new JLabel(String.format("剩余行动点：%d", player.getRemainingActions()));
+            JLabel actionLabel = new JLabel(String.format("Remaining Actions: %d", player.getRemainingActions()));
             actionLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-            actionLabel.setForeground(new Color(0, 100, 0)); // 深绿色
+            actionLabel.setForeground(new Color(0, 100, 0)); // Dark green
             panel.add(actionLabel);
-
         }
-        // 手牌数量
-        JLabel handLabel = new JLabel(String.format("手牌数量：%d", player.getHand().size()));
+
+        // Hand size
+        JLabel handLabel = new JLabel(String.format("Hand Size: %d", player.getHand().size()));
         handLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // 添加所有标签
+        // Add all labels
         panel.add(nameLabel);
         panel.add(Box.createVerticalStrut(5));
         panel.add(roleLabel);

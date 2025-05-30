@@ -2,7 +2,6 @@ package view.gamePanel;
 
 import model.Player;
 import model.Tile;
-import model.enums.TileType;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,11 +9,12 @@ import java.util.List;
 
 public class TileButton extends JButton {
     private Tile tile;
+    // Player colors: player 1 (red), player 2 (blue), player 3 (green), player 4 (yellow)
     private static final Color[] PLAYER_COLORS = {
-            new Color(255, 0, 0, 180),    // 玩家1：红色
-            new Color(0, 0, 255, 180),    // 玩家2：蓝色
-            new Color(0, 255, 0, 180),    // 玩家3：绿色
-            new Color(255, 255, 0, 180)   // 玩家4：黄色
+            new Color(255, 0, 0, 180),    // Player 1: Red
+            new Color(0, 0, 255, 180),    // Player 2: Blue
+            new Color(0, 255, 0, 180),    // Player 3: Green
+            new Color(255, 255, 0, 180)   // Player 4: Yellow
     };
 
     public TileButton(Tile tile) {
@@ -24,16 +24,16 @@ public class TileButton extends JButton {
     }
 
     public void updateAppearance() {
-        // 设置基本背景色
+        // Set the basic background color
         if (tile.isSunk()) {
             setBackground(Color.DARK_GRAY);
         } else if (tile.isFlooded()) {
-            setBackground(new Color(135, 206, 235)); // 浅蓝色
+            setBackground(new Color(135, 206, 235)); // Light blue
         } else {
-            setBackground(new Color(144, 238, 144)); // 浅绿色
+            setBackground(new Color(144, 238, 144)); // Light green
         }
 
-        // 设置板块名称
+        // Set tile name
         setText("<html><center>" + tile.getType().getDisplayName() + "</center></html>");
     }
 
@@ -41,25 +41,25 @@ public class TileButton extends JButton {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // 获取在此板块上的玩家
+        // Get the players on this tile
         List<Player> playersOnTile = tile.getPlayersOnTile();
         if (playersOnTile != null && !playersOnTile.isEmpty()) {
             Graphics2D g2d = (Graphics2D) g;
-            int size = 20; // 玩家标记的大小
-            int spacing = 5; // 玩家标记之间的间距
+            int size = 20;    // Size of player marker
+            int spacing = 5;  // Spacing between player markers
 
-            // 在板块四个角落显示玩家标记
+            // Show player markers at four corners of the tile
             for (int i = 0; i < playersOnTile.size(); i++) {
                 Player player = playersOnTile.get(i);
                 g2d.setColor(PLAYER_COLORS[player.getPlayerId() - 1]);
 
-                // 根据玩家索引决定位置
+                // Decide position based on player index
                 int x = (i % 2 == 0) ? spacing : getWidth() - size - spacing;
                 int y = (i < 2) ? spacing : getHeight() - size - spacing;
 
                 g2d.fillOval(x, y, size, size);
 
-                // 在圆圈中间显示玩家编号
+                // Draw the player number in the center of the circle
                 g2d.setColor(Color.WHITE);
                 g2d.setFont(new Font("Arial", Font.BOLD, 12));
                 String playerNum = String.valueOf(player.getPlayerId());

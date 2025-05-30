@@ -9,9 +9,9 @@ public class CardPanel extends JPanel {
     private JPanel floodCardPanel;
     private JPanel playerHandPanel;
 
-    // 卡牌显示相关的常量
-    private static final Color TREASURE_DECK_COLOR = new Color(255, 215, 0, 180); // 金色，半透明
-    private static final Color FLOOD_DECK_COLOR = new Color(0, 191, 255, 180);   // 深天蓝色，半透明
+    // Card display related constants
+    private static final Color TREASURE_DECK_COLOR = new Color(255, 215, 0, 180); // Gold, semi-transparent
+    private static final Color FLOOD_DECK_COLOR = new Color(0, 191, 255, 180);   // Deep sky blue, semi-transparent
     private static final int CARD_WIDTH = 80;
     private static final int CARD_HEIGHT = 120;
     private static final int CARD_SPACING = 10;
@@ -20,75 +20,75 @@ public class CardPanel extends JPanel {
         setPreferredSize(new Dimension(0, 150));
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        setBackground(new Color(245, 245, 245)); // 浅灰色背景
+        setBackground(new Color(245, 245, 245)); // Light gray background
 
         initComponents();
         addComponents();
     }
 
     /**
-     * 初始化卡牌相关组件
+     * Initialize card-related components
      */
     private void initComponents() {
-        // 宝藏牌堆面板
+        // Treasure deck panel
         treasureCardPanel = new JPanel(new BorderLayout());
         treasureCardPanel.setBackground(TREASURE_DECK_COLOR);
         treasureCardPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(218, 165, 32), 2), // 暗金色边框
+                BorderFactory.createLineBorder(new Color(218, 165, 32), 2), // Dark golden border
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
-        JLabel treasureLabel = new JLabel("宝藏牌堆");
+        JLabel treasureLabel = new JLabel("Treasure Deck");
         treasureLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        treasureLabel.setFont(new Font("微软雅黑", Font.BOLD, 14));
+        treasureLabel.setFont(new Font("Arial", Font.BOLD, 14));
         treasureCardPanel.add(treasureLabel, BorderLayout.NORTH);
 
-        // 洪水牌堆面板
+        // Flood deck panel
         floodCardPanel = new JPanel(new BorderLayout());
         floodCardPanel.setBackground(FLOOD_DECK_COLOR);
         floodCardPanel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(70, 130, 180), 2), // 钢蓝色边框
+                BorderFactory.createLineBorder(new Color(70, 130, 180), 2), // Steel blue border
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
-        JLabel floodLabel = new JLabel("洪水牌堆");
+        JLabel floodLabel = new JLabel("Flood Deck");
         floodLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        floodLabel.setFont(new Font("微软雅黑", Font.BOLD, 14));
+        floodLabel.setFont(new Font("Arial", Font.BOLD, 14));
         floodCardPanel.add(floodLabel, BorderLayout.NORTH);
 
-        // 玩家手牌面板
+        // Player hand panel
         playerHandPanel = new JPanel();
         playerHandPanel.setLayout(new FlowLayout(FlowLayout.CENTER, CARD_SPACING, 5));
         playerHandPanel.setBackground(new Color(245, 245, 245));
         playerHandPanel.setBorder(BorderFactory.createTitledBorder(
                 BorderFactory.createLineBorder(Color.GRAY),
-                "玩家手牌",
+                "Player Hand",
                 javax.swing.border.TitledBorder.CENTER,
                 javax.swing.border.TitledBorder.TOP,
-                new Font("微软雅黑", Font.BOLD, 12)
+                new Font("Arial", Font.BOLD, 12)
         ));
     }
 
     /**
-     * 添加卡牌相关组件到面板
+     * Add card-related components to the panel
      */
     private void addComponents() {
-        // 创建牌堆面板
+        // Create deck panel
         JPanel deckPanel = new JPanel(new GridLayout(1, 2, 10, 0));
         deckPanel.setOpaque(false);
 
-        // 添加牌堆
+        // Add decks
         deckPanel.add(treasureCardPanel);
         deckPanel.add(floodCardPanel);
 
-        // 将牌堆面板和手牌面板添加到主面板
+        // Add both deck panel and player hand panel to main panel
         add(deckPanel, BorderLayout.NORTH);
         add(playerHandPanel, BorderLayout.CENTER);
     }
 
     /**
-     * 更新玩家手牌显示
-     * @param cards 玩家手中的卡牌
+     * Update the display of player's hand cards
+     * @param cards The cards in player's hand
      */
     public void updatePlayerHand(String[] cards) {
         playerHandPanel.removeAll();
@@ -103,7 +103,7 @@ public class CardPanel extends JPanel {
     }
 
     /**
-     * 创建单个卡牌组件
+     * Create a single card component
      */
     private JPanel createCardComponent(String cardName) {
         JPanel cardPanel = new JPanel();
@@ -115,10 +115,10 @@ public class CardPanel extends JPanel {
         ));
         cardPanel.setBackground(Color.WHITE);
 
-        // 卡牌名称标签
+        // Card name label
         JLabel nameLabel = new JLabel("<html><center>" + cardName + "</center></html>");
         nameLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        nameLabel.setFont(new Font("微软雅黑", Font.PLAIN, 12));
+        nameLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         cardPanel.add(nameLabel, BorderLayout.CENTER);
 
         return cardPanel;

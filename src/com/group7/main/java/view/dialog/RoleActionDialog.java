@@ -2,7 +2,6 @@ package view.dialog;
 
 import model.*;
 import model.card.TreasureCard;
-import model.enums.Role;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,7 +21,7 @@ public class RoleActionDialog extends JDialog {
     }
 
     public RoleActionDialog(JFrame parent, Player currentPlayer, ActionListener listener) {
-        super(parent, "角色特殊能力", true);
+        super(parent, "Role Special Ability", true);
         this.currentPlayer = currentPlayer;
         this.game = Game.getInstance();
         this.actionListener = listener;
@@ -35,7 +34,7 @@ public class RoleActionDialog extends JDialog {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout(10, 10));
 
-        // 根据不同角色显示不同的交互界面
+        // Show the appropriate UI depending on the role's special action
         switch (currentPlayer.getRole()) {
             case ENGINEER:
                 setupEngineerPanel();
@@ -47,7 +46,7 @@ public class RoleActionDialog extends JDialog {
                 setupMessengerPanel();
                 break;
             default:
-                // 其他角色不需要特殊交互
+                // Other roles do not require a special interaction dialog
                 dispose();
                 return;
         }
@@ -60,10 +59,10 @@ public class RoleActionDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JLabel label = new JLabel("选择第二个要排水的板块：");
+        JLabel label = new JLabel("Select the second tile to shore up:");
         panel.add(label, BorderLayout.NORTH);
 
-        // 获取当前可以排水的板块
+        // Get available flooded tiles
         List<Tile> floodedTiles = game.getBoard().getFloodedTiles();
         JList<Tile> tileList = new JList<>(floodedTiles.toArray(new Tile[0]));
         tileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -72,8 +71,8 @@ public class RoleActionDialog extends JDialog {
         panel.add(scrollPane, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
+        JButton confirmButton = new JButton("Confirm");
+        JButton cancelButton = new JButton("Cancel");
 
         confirmButton.addActionListener(e -> {
             Tile selectedTile = tileList.getSelectedValue();
@@ -99,9 +98,9 @@ public class RoleActionDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 第一步：选择要移动的玩家
+        // Step 1: Select the player to move
         JPanel playerSelectionPanel = new JPanel(new BorderLayout());
-        JLabel playerLabel = new JLabel("选择要移动的玩家：");
+        JLabel playerLabel = new JLabel("Select a player to move:");
         List<Player> otherPlayers = game.getPlayers().stream()
                 .filter(p -> p != currentPlayer)
                 .toList();
@@ -111,8 +110,8 @@ public class RoleActionDialog extends JDialog {
         playerSelectionPanel.add(playerComboBox, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
+        JButton confirmButton = new JButton("Confirm");
+        JButton cancelButton = new JButton("Cancel");
 
         confirmButton.addActionListener(e -> {
             Player selectedPlayer = (Player) playerComboBox.getSelectedItem();
@@ -140,9 +139,9 @@ public class RoleActionDialog extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(5, 5));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 第一步：选择目标玩家
+        // Step 1: Select the recipient player
         JPanel playerSelectionPanel = new JPanel(new BorderLayout());
-        JLabel playerLabel = new JLabel("选择要给予卡牌的玩家：");
+        JLabel playerLabel = new JLabel("Select the player to give a card to:");
         List<Player> otherPlayers = game.getPlayers().stream()
                 .filter(p -> p != currentPlayer)
                 .toList();
@@ -151,9 +150,9 @@ public class RoleActionDialog extends JDialog {
         playerSelectionPanel.add(playerLabel, BorderLayout.NORTH);
         playerSelectionPanel.add(playerComboBox, BorderLayout.CENTER);
 
-        // 第二步：选择要给出的宝藏卡
+        // Step 2: Select a treasure card to give
         JPanel cardSelectionPanel = new JPanel(new BorderLayout());
-        JLabel cardLabel = new JLabel("选择要给出的宝藏卡：");
+        JLabel cardLabel = new JLabel("Select the treasure card to give:");
         List<TreasureCard> treasureCards = currentPlayer.getGiveableTreasureCards();
         JList<TreasureCard> cardList = new JList<>(treasureCards.toArray(new TreasureCard[0]));
         cardList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -166,16 +165,16 @@ public class RoleActionDialog extends JDialog {
         selectionPanel.add(cardSelectionPanel);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
+        JButton confirmButton = new JButton("Confirm");
+        JButton cancelButton = new JButton("Cancel");
 
         confirmButton.addActionListener(e -> {
             Player selectedPlayer = (Player) playerComboBox.getSelectedItem();
             TreasureCard selectedCard = cardList.getSelectedValue();
             if (selectedPlayer != null && selectedCard != null) {
-                // 先通知选择的玩家
+                // First notify selected player
                 actionListener.onPlayerSelected(selectedPlayer);
-                // 再通知选择的卡牌
+                // Then notify selected card
                 actionListener.onCardSelected(selectedCard);
             }
             dispose();

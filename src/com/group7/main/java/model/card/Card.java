@@ -6,7 +6,7 @@ import lombok.Getter;
 import lombok.AllArgsConstructor;
 
 /***
- * 基础卡牌类
+ * Basic card category
  */
 @Getter
 @AllArgsConstructor

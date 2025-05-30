@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.*;
 
+/**
+ * Generic deck class for handling cards and discard pile.
+ */
 public class Deck<T extends Card> {
     private Queue<T> cards;
     private List<T> discardPile;
@@ -17,20 +20,22 @@ public class Deck<T extends Card> {
     }
 
     /**
-     * 添加卡牌到牌库
+     * Add a card to the deck.
      */
     public void addCard(T card) {
         cards.offer(card);
     }
 
     /**
-     * 抽取一张卡牌
+     * Draw a card from the deck.
+     * If the deck is empty, reshuffle the discard pile.
+     * @return the drawn card, or null if no cards are available.
      */
     public T drawCard() {
-        // 如果牌库为空，尝试重组
+        // If the deck is empty, try to reshuffle discard pile.
         if (cards.isEmpty()) {
             reshuffleDiscardPile();
-            // 如果重组后仍为空，返回null
+            // If still empty after reshuffling, return null.
             if (cards.isEmpty()) {
                 return null;
             }
@@ -39,14 +44,14 @@ public class Deck<T extends Card> {
     }
 
     /**
-     * 将卡牌放入弃牌堆
+     * Add a card to the discard pile.
      */
     public void discard(T card) {
         discardPile.add(card);
     }
 
     /**
-     * 洗牌
+     * Shuffle the deck.
      */
     public void shuffle() {
         List<T> tempList = new ArrayList<>(cards);
@@ -56,49 +61,50 @@ public class Deck<T extends Card> {
     }
 
     /**
-     * 重组弃牌堆
-     * 将弃牌堆洗牌后放到牌库顶部
+     * Reshuffle the discard pile and add it back to the top of the deck.
      */
     public void reshuffleDiscardPile() {
         if (discardPile.isEmpty()) {
             return;
         }
 
-        // 洗牌弃牌堆
+        // Shuffle the discard pile
         Collections.shuffle(discardPile);
 
-        // 将洗好的牌放到牌库顶部
+        // Add shuffled cards to the deck
         cards.addAll(discardPile);
 
-        // 清空弃牌堆
+        // Clear the discard pile
         discardPile.clear();
     }
 
     /**
-     * 获取牌库中剩余的卡牌数量
+     * Get the number of cards remaining in the deck.
      */
     public int getRemainingCards() {
         return cards.size();
     }
 
     /**
-     * @return 剩余的牌数量
+     * Get the number of cards in the discard pile.
+     * @return discard pile size
      */
     public int getDiscardPileSize() {
         return discardPile.size();
     }
 
     /**
-     * 检查牌库是否为空
+     * Check if the deck is empty.
      */
     public boolean isEmpty() {
         return cards.isEmpty();
     }
 
     /**
-     * 获取弃牌堆
+     * Get an unmodifiable view of the discard pile.
      */
     public List<T> getDiscardPile() {
         return Collections.unmodifiableList(discardPile);
     }
 }
+

@@ -1,40 +1,40 @@
 package model;
 
 /***
- * 管理游戏水位
- * 控制每回合抽取洪水卡的数量
- * 提供水位上升方法和危险等级判断
+ * Manages the game's water level.
+ * Controls how many flood cards to draw each turn.
+ * Provides methods for rising water level and danger threshold detection.
  */
 public class WaterLevel {
-    // 不同水位对应的抽取洪水卡数量
+    // Number of flood cards to draw at each water level
     private static final int[] LEVELS = {2, 2, 3, 3, 3, 4, 4, 5, 5, 6};
 
     private int level;
 
     public WaterLevel() {
-        this.level = 0;  // 初始水位
+        this.level = 0;  // Initial water level
     }
 
     /**
-     * 尝试返回水位上升。返回false时一般是游戏失败的时候
+     * Try to increase water level. Returns false when reaching the maximum (game over condition).
      */
     public boolean tryRise() {
         if (level < LEVELS.length - 1) {
             level++;
             return true;
         }
-        return false;  // 水位到达最高点
+        return false;  // Water level has reached the maximum
     }
 
     /**
-     * 获取当前水位下需要抽取的洪水卡数量
+     * Get the number of flood cards to draw at the current water level.
      */
     public int getFloodCardsCount() {
         return LEVELS[level];
     }
 
     /**
-     * 获取当前水位级别
+     * Get the current water level index.
      */
     public int getCurrentLevel() {
         return level;

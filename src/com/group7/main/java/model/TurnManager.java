@@ -2,15 +2,12 @@ package model;
 
 import lombok.Getter;
 import model.card.*;
-import model.enums.CardType;
-import model.enums.GameState;
 import model.enums.Role;
 import model.enums.TreasureType;
-
 import java.util.List;
 import java.util.ArrayList;
 
-// 回合管理
+// Turn management
 public class TurnManager {
     private Game game;
     private List<Player> players;
@@ -23,18 +20,18 @@ public class TurnManager {
     private ActionType currentAction;
 
     public enum TurnPhase {
-        ACTIONS,         // 玩家行动阶段
-        DRAW_TREASURE,   // 抽取宝藏卡阶段
-        DRAW_FLOOD,      // 抽取洪水卡阶段
-        END              // 回合结束阶段
+        ACTIONS,         // Player action phase
+        DRAW_TREASURE,   // Draw treasure cards phase
+        DRAW_FLOOD,      // Draw flood cards phase
+        END              // End of turn phase
     }
 
     public enum ActionType {
-        MOVE,           // 移动
-        SHORE_UP,       // 加固
-        GIVE_CARD,      // 给予卡牌
-        CAPTURE_TREASURE, // 获取宝藏
-        NAVIGATOR       // 导航员行动
+        MOVE,             // Move
+        SHORE_UP,         // Shore up
+        GIVE_CARD,        // Give card
+        CAPTURE_TREASURE, // Capture treasure
+        NAVIGATOR         // Navigator action
     }
 
     public TurnManager(Game game, List<Player> players) {
@@ -48,7 +45,7 @@ public class TurnManager {
         return players.get(game.getCurrentPlayerIndex());
     }
 
-    // 开始一个玩家的回合
+    // Start a player's turn
     public void startPlayerTurn() {
         currentPhase = TurnPhase.ACTIONS;
         Player currentPlayer = getCurrentPlayer();
@@ -56,7 +53,7 @@ public class TurnManager {
         game.notifyTurnStarted(currentPlayer);
     }
 
-    // 玩家执行行动
+    // Player performs an action
     public boolean performAction(ActionType actionType, Object... params) {
         Player currentPlayer = getCurrentPlayer();
         boolean actionSuccessful = false;
@@ -91,18 +88,18 @@ public class TurnManager {
 
         if (actionSuccessful) {
             currentPlayer.useAction();
-            // 如果玩家用完了行动点，自动进入下一阶段
+            // If player runs out of action points, automatically go to the next phase
             if (currentPlayer.getRemainingActions() <= 0) {
                 nextPhase();
             }
-            // 通知游戏状态改变
+            // Notify that game state changed
             game.notifyTurnStarted(currentPlayer);
         }
 
         return actionSuccessful;
     }
 
-    // 移动玩家
+    // Move player
     private boolean movePlayer(Player player, Tile destinationTile) {
         if (destinationTile == null || destinationTile.isSunk()) {
             return false;
@@ -111,7 +108,7 @@ public class TurnManager {
         Tile currentTile = player.getCurrentTile();
         List<Tile> reachableTiles;
 
-        // 根据角色获取可到达的板块
+        // Get reachable tiles based on player's role
         if (player.getRole() == Role.EXPLORER) {
             reachableTiles = game.getBoard().getDiagonalAndOrthogonalTiles(currentTile);
         } else if (player.getRole() == Role.DIVER) {
@@ -127,20 +124,20 @@ public class TurnManager {
         return false;
     }
 
-    // 加固板块
+    // Shore up tile
     private boolean shoreUpTile(Player player, Tile tile) {
         if (tile == null || !tile.isFlooded() || tile.isSunk()) {
             return false;
         }
 
-        // 工程师可以一次行动加固两个板块
+        // Engineer can shore up two tiles in one action
         if (player.getRole() == Role.ENGINEER) {
-            // 工程师的特殊处理
+            // Special case for Engineer
             tile.shoreUp();
             return true;
         }
 
-        // 探险家可以加固对角的板块
+        // Explorer can shore up diagonally
         if (player.getRole() == Role.EXPLORER) {
             List<Tile> reachableTiles = game.getBoard().getDiagonalAndOrthogonalTiles(player.getCurrentTile());
             if (reachableTiles.contains(tile)) {
@@ -148,7 +145,7 @@ public class TurnManager {
                 return true;
             }
         } else {
-            // 其他角色只能加固相邻的板块
+            // Other roles can only shore up adjacent tiles
             List<Tile> reachableTiles = game.getBoard().getAdjacentTiles(player.getCurrentTile());
             if (reachableTiles.contains(tile)) {
                 tile.shoreUp();
@@ -159,28 +156,26 @@ public class TurnManager {
         return false;
     }
 
-    // 给予卡牌
+    // Give card to another player
     private boolean giveCard(Player fromPlayer, Player toPlayer, Card card) {
-        // 信使可以在任何位置给卡
+        // Messenger can give cards anywhere
         if (fromPlayer.getRole() == Role.MESSENGER) {
             return fromPlayer.giveCardToPlayer(toPlayer, card);
         }
-
-        // 其他角色需要在同一个板块
+        // Other roles must be on the same tile
         if (fromPlayer.getCurrentTile() == toPlayer.getCurrentTile()) {
             return fromPlayer.giveCardToPlayer(toPlayer, card);
         }
-
         return false;
     }
 
-    // 获取宝藏
+    // Capture treasure
     private boolean captureTreasure(Player player, Tile treasureTile) {
         if (!game.getBoard().canCaptureTreasure(treasureTile, player)) {
             return false;
         }
 
-        // 找到4张对应的宝藏卡并弃掉
+        // Find 4 corresponding treasure cards and discard them
         TreasureType treasureType = treasureTile.getTreasure();
         List<TreasureCard> cardsToDiscard = new ArrayList<>();
 
@@ -196,20 +191,20 @@ public class TurnManager {
             }
         }
 
-        // 弃掉宝藏卡并添加宝藏到玩家收集列表中
+        // Discard treasure cards and add the treasure to player's collection
         for (TreasureCard card : cardsToDiscard) {
             game.playerDiscardHandCard(player, card);
         }
         player.addCollectedTreasure(treasureType);
 
-        // 触发宝藏获取事件
+        // Trigger treasure captured event
         for (GameEventListener listener : game.getEventListeners()) {
             listener.onTreasureCaptured(player, treasureType);
         }
         return true;
     }
 
-    // 进入下一个阶段
+    // Go to the next phase
     public void nextPhase() {
         switch (currentPhase) {
             case ACTIONS:
@@ -228,53 +223,50 @@ public class TurnManager {
                 break;
 
             case END:
-                // 切换到下一个玩家
+                // Switch to next player
                 int nextIndex = (game.getCurrentPlayerIndex() + 1) % players.size();
                 game.setCurrentPlayerIndex(nextIndex);
                 if (nextIndex == 0) {
                     roundNumber++;
                 }
-
-                // 开始新玩家的回合
-                currentPhase = TurnPhase.ACTIONS;  // 重置为行动阶段
+                // Start the next player's turn
+                currentPhase = TurnPhase.ACTIONS;  // Reset to action phase
                 startPlayerTurn();
                 break;
         }
-
-        // 通知GameController阶段改变
+        // Notify GameController that phase changed
         game.notifyPhaseChanged(currentPhase);
     }
 
-    // 抽取宝藏卡
+    // Draw treasure cards
     private void drawTreasureCards() {
         Player currentPlayer = getCurrentPlayer();
         boolean waterRiseCardDrawn = false;
 
-        // 抽两张宝藏卡
+        // Draw two treasure cards
         for (int i = 0; i < 2; i++) {
             HandCard card = game.drawTreasureCard();
 
-            // 如果抽到水位上升卡
+            // If Water Rise card is drawn
             if (card instanceof WaterRiseCard) {
                 if (waterRiseCardDrawn) {
-                    // 第二张水位上升卡，只上升水位
+                    // Second Water Rise card, only increase water level
                     game.increaseWaterLevel();
                 } else {
-                    // 第一张水位上升卡，执行完整效果
+                    // First Water Rise card, perform full effect
                     waterRiseCardDrawn = true;
                     ((WaterRiseCard) card).useCard(currentPlayer);
                 }
                 continue;
             }
-
-            // 普通卡牌加入手牌
+            // Add normal card to hand
             if (card != null) {
                 currentPlayer.addCardToHand(card);
 
-                // 检查手牌上限
+                // Check hand limit
                 if (currentPlayer.handExceedsLimit()) {
                     game.notifyPlayerMustDiscard(currentPlayer);
-                    return; // 等待玩家弃牌后再继续
+                    return; // Wait for player to discard before continuing
                 }
             }
         }
@@ -283,9 +275,9 @@ public class TurnManager {
         }
     }
 
-    // 抽取洪水卡
+    // Draw flood cards
     private void drawFloodCards() {
-        // 根据当前水位获取需要抽取的洪水卡数量
+        // Determine number of flood cards to draw based on water level
         int cardsToDrawCount = game.getWaterLevel().getFloodCardsCount();
 
         for (int i = 0; i < cardsToDrawCount; i++) {
@@ -295,29 +287,27 @@ public class TurnManager {
 
                 if (tileToFlood != null) {
                     if (tileToFlood.isFlooded()) {
-                        // 如果已经被淹没，则沉没
+                        // If already flooded, sink it
                         tileToFlood.sink();
-                        // 检查玩家是否在沉没的板块上
+                        // Check if any player is on the sunk tile
                         checkPlayersOnSunkTile(tileToFlood);
                     } else {
-                        // 如果未被淹没，则淹没
+                        // If not yet flooded, flood it
                         tileToFlood.flood();
                     }
                 }
-
-                // 将洪水卡放入弃牌堆
+                // Discard the flood card
                 game.getFloodDeck().discard(card);
             }
         }
-
-        // 进入回合结束阶段
+        // Enter end of turn phase
         nextPhase();
     }
 
     private void checkPlayersOnSunkTile(Tile sunkTile) {
         for (Player player : players) {
             if (player.getCurrentTile() == sunkTile) {
-                // 如果是潜水员，可以游到相邻的板块
+                // Diver can swim to an adjacent tile
                 if (player.getRole() == Role.DIVER) {
                     List<Tile> reachableTiles = game.getBoard().getReachableTilesForDiver(sunkTile);
                     if (!reachableTiles.isEmpty()) {
@@ -325,8 +315,7 @@ public class TurnManager {
                         continue;
                     }
                 }
-
-                // 检查相邻的可用板块
+                // Check for available adjacent tiles
                 List<Tile> adjacentTiles = game.getBoard().getAdjacentTiles(sunkTile);
                 List<Tile> availableTiles = new ArrayList<>();
 
@@ -336,34 +325,32 @@ public class TurnManager {
                     }
                 }
 
-                // 如果有可用的相邻板块，移动到第一个可用的板块
+                // If there is any available adjacent tile, move to the first one
                 if (!availableTiles.isEmpty()) {
                     player.moveToTile(availableTiles.get(0));
                 } else {
-                    // 如果没有可用的相邻板块，游戏结束
-                    game.triggerGameOver("玩家在板块沉没时无处可逃！");
+                    // If there is nowhere to go, game over!
+                    game.triggerGameOver("A player was unable to escape from a sinking tile!");
                 }
             }
         }
     }
 
-    // 结束当前回合
+    // End the current turn
     private void endTurn() {
-        // 检查游戏是否结束
+        // Check if the game has ended
         if (game.checkWinCondition()) {
-            game.triggerGameOver("恭喜！你们成功收集了所有宝藏并逃离了岛屿！");
+            game.triggerGameOver("Congratulations! You have collected all the treasures and escaped the island!");
             return;
         }
-
         if (game.checkLoseCondition()) {
-            return; // 游戏已经在checkLoseCondition中结束
+            return; // Game has ended in checkLoseCondition
         }
-
-        // 进入下一个玩家的回合
+        // Move to the next player's turn
         nextPhase();
     }
 
-    // 立即结束当前玩家的回合（可用于某些特殊卡牌效果）
+    // Immediately end the current player's turn (for special cards or effects)
     public void forceEndTurn() {
         currentPhase = TurnPhase.END;
         endTurn();
@@ -376,5 +363,4 @@ public class TurnManager {
     public ActionType getCurrentAction() {
         return currentAction;
     }
-
 }

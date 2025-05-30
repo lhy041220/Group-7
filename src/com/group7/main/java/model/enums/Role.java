@@ -11,24 +11,24 @@ import java.util.List;
 
 public enum Role implements RoleAbility {
 
-        PILOT("飞行员") {
+        PILOT("Pilot") {
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {
-            // 飞行员特殊能力：可以飞到任意板块（每回合限用一次）
+            // Pilot's special ability: Can fly to any plate (limited to once per round)
             if (destinationTile != null && destinationTile.isNavigable()) {
                 player.moveToTile(destinationTile);
             }
         }  
     },
 
-    ENGINEER("工程师"){
+    ENGINEER("Engineer"){
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {
             if (destinationTile != null && destinationTile.isFlooded()) {
                 Game game = Game.getInstance();
                 game.getBoard().dryTile(destinationTile);
 
-                // 打开对话框选择第二个要排水的板块
+                // Open the dialog box and select the second section you want to drain
                 SwingUtilities.invokeLater(() -> {
                     JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(game.getMainFrame());
                     RoleActionDialog dialog = new RoleActionDialog(frame, player, new RoleActionDialog.ActionListener() {
@@ -54,11 +54,11 @@ public enum Role implements RoleAbility {
         }  
     },
 
-    NAVIGATOR("领航员") {
+    NAVIGATOR("Navigator") {
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {
-            // 领航员特殊能力：可以移动其他玩家最多两格
-            // 注意：这里需要UI交互来选择目标玩家和移动位置
+            // Navigator's special ability: Can move other players up to two Spaces
+            // Note: Here, UI interaction is required to select the target player and move the position
             Game game = Game.getInstance();
 
             SwingUtilities.invokeLater(() -> {
@@ -85,10 +85,10 @@ public enum Role implements RoleAbility {
         }
     },
 
-    DIVER("潜水员") {
+    DIVER("Diver") {
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {
-            // 潜水员特殊能力：可以穿过任意数量的相邻的被淹没或沉没的板块
+            // Diver's special ability: Can pass through any number of adjacent submerged or sunken plates
             if (destinationTile != null) {
                 Game game = Game.getInstance();
                 List<Tile> reachableTiles = game.getBoard().getReachableTilesForDiver(player.getCurrentTile());
@@ -100,12 +100,12 @@ public enum Role implements RoleAbility {
         }  
     },
 
-    MESSENGER("信使") {
+    MESSENGER("Messenger") {
         @Override  
         public void useSpecialAbility(Player player, Tile destinationTile) {
-            // 信使特殊能力：可以在任意位置将宝藏卡给其他玩家
+            // Messenger's special ability: Can give treasure cards to other players at any position
             Game game = Game.getInstance();
-            // 打开对话框选择玩家和卡牌
+            // Open the dialog box and select the player and the card
             SwingUtilities.invokeLater(() -> {
                 JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(game.getMainFrame());
                 RoleActionDialog dialog = new RoleActionDialog(frame, player, new RoleActionDialog.ActionListener() {
@@ -134,21 +134,20 @@ public enum Role implements RoleAbility {
         }
     },
 
-    EXPLORER("探险家") {
+    EXPLORER("Explorer") {
         @Override
         public void useSpecialAbility(Player player, Tile destinationTile) {
-            // 探险家特殊能力：可以斜向移动，并且可以斜向排水
-        // 探险家特殊能力：可以斜向移动，并且可以斜向排水
+            // Explorer's special ability: Can move diagonally and drain water diagonally
             if (destinationTile != null) {
                 Game game = Game.getInstance();
                 List<Tile> reachableTiles = game.getBoard().getDiagonalAndOrthogonalTiles(player.getCurrentTile());
 
                 if (reachableTiles.contains(destinationTile)) {
                     if (destinationTile.isFlooded()) {
-                        // 如果目标板块是被淹没的，进行排水
+                        // If the target plate is submerged, carry out drainage
                         game.getBoard().dryTile(destinationTile);
                     } else {
-                        // 否则移动到目标板块
+                        // Otherwise, move to the target section
                         player.moveToTile(destinationTile);
                     }
                 }

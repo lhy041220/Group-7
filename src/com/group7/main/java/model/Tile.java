@@ -2,7 +2,6 @@ package model;
 
 import lombok.Getter;
 
-import lombok.NoArgsConstructor;
 import model.enums.TileState;
 import model.enums.TileType;
 import model.enums.TreasureType;
@@ -10,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /***
- * 表示岛屿上的每个格子
- * 包含类型、状态(正常/已淹没/完全沉没)、位置和宝藏信息
- * 提供淹没(flood)和排水(shore_up)方法
+ * Represents each cell on the island.
+ * Includes type, state (normal/flooded/sunk), position and treasure info.
+ * Provides flood and shoreUp methods.
  */
 @Getter
 public class Tile {
@@ -45,7 +44,7 @@ public class Tile {
     }
 
     /**
-     * 淹没格子
+     * Flood this tile.
      */
     public void flood() {
         state = TileState.FLOODED;
@@ -53,7 +52,7 @@ public class Tile {
     }
 
     /**
-     * 沉没格子
+     * Sink this tile.
      */
     public void sink() {
         state = TileState.SUNK;
@@ -61,14 +60,13 @@ public class Tile {
     }
 
     /**
-     * 使格子排水
+     * Shore up this tile (remove water).
      */
     public void shoreUp() {
         state = TileState.NORMAL;
         flooded = false;
         sunk = false;
     }
-
 
     public boolean isFlooded() {
         return state == TileState.FLOODED;
@@ -79,7 +77,7 @@ public class Tile {
     }
 
     /**
-     * 判断格子是否可通行
+     * Whether the tile is navigable (not sunk).
      */
     public boolean isNavigable() {
         return state != TileState.SUNK;
@@ -91,14 +89,14 @@ public class Tile {
     }
 
     /**
-     * 检查是否有指定类型的宝藏
+     * Check if this tile has the given treasure type.
      */
     public boolean hasTreasure(TreasureType treasureType) {
         return this.treasure == treasureType;
     }
 
     /**
-     * 获取板块名称
+     * Get tile name.
      */
     public String getName() {
         return type.getDisplayName();

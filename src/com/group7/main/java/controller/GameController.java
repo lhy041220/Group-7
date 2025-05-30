@@ -5,11 +5,13 @@ import model.*;
 import model.card.*;
 import view.gamePanel.MainFrame;
 import model.enums.GameState;
-import model.TurnManager.ActionType;
 
 import javax.swing.*;
 import java.io.InputStream;
 
+/**
+ * Controller for managing the main game process, player actions, and UI updates.
+ */
 public class GameController {
     @Getter
     private Game game;
@@ -19,10 +21,10 @@ public class GameController {
     private final String IMAGE_DIR = "/images/Tiles/";
 
     public GameController(Game game, MainFrame mainFrame) {
-        // 默认构造函数
+        // Default constructor
         this.game = game;
         this.mainFrame = mainFrame;
-        // 设置Game实例的MainFrame引用
+        // Set reference to MainFrame in Game instance
         game.setMainFrame(mainFrame);
     }
 
@@ -38,26 +40,30 @@ public class GameController {
         if (game != null && mainFrame != null) {
             game.startGame(playerNum);
             mainFrame.updateBoard(game.getBoard());
-            // 通知回合开始
+            // Notify turn start
             handleStartPlayerTurn();
         }
     }
 
     private int getPlayerNum() {
-        // TODO: 从mainFame中获取玩家数量
+        // TODO: Retrieve player number from mainFrame if needed
         if (mainFrame != null) {
 
         }
         return 3;
     }
 
-    // 处理玩家主动移动
+    /**
+     * Handle player's manual movement to the specified destination tile.
+     *
+     * @param destination The tile to move the player to
+     */
     public void handlePlayerMove(Tile destination) {
         Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0) {
-            // 直接调用player的移动方法
+            // Call player's move method
             if (player.moveToTile(destination)) {
-                mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 移动到了" + destination);
+                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " moved to " + destination);
                 player.useAction();
                 mainFrame.updateBoard(game.getBoard());
                 checkAfterPlayerAction(player);
@@ -65,136 +71,161 @@ public class GameController {
         }
     }
 
-    // 处理排水
+    /**
+     * Handle player's shore up action on the specified tile.
+     *
+     * @param tile The tile to shore up
+     */
     public void handlePlayerShoreUp(Tile tile) {
         Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0 && tile.isFlooded() && !tile.isSunk()) {
-            // 直接调用player的排水方法
+            // Call player's shore up method
             if (player.shoreUp(tile)) {
-                mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 对 " + tile.getType().getDisplayName() + " 排水");
+                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " shored up " + tile.getType().getDisplayName() + " 排水");
                 mainFrame.updateBoard(game.getBoard());
                 checkAfterPlayerAction(player);
             }
         }
     }
 
-    // 使用特殊卡
+    /**
+     * Handle the use of a special card by the player.
+     *
+     * @param card The special card used
+     */
     public void handlePlayerUseCard(SpecialCard card) {
         Player player = game.getCurrentPlayer();
         if (card.use(player)) {
-            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊卡: " + card.getName());
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " used special card: " + card.getName());
             checkAfterPlayerAction(player);
         }
     }
 
-    // 每次行动后调用：用完行动点就进入抽牌/下阶段
+    /**
+     * Called after each player action. If no remaining actions, triggers next phase.
+     *
+     * @param player The player who performed the action
+     */
     private void checkAfterPlayerAction(Player player) {
-        // 更新UI显示
+        // Update UI
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
 
-        // 打印调试信息
-        System.out.println("检查行动后状态 - 玩家" + player.getPlayerId() + "剩余行动点：" + player.getRemainingActions());
+        // Debug info
+        System.out.println("Post-action check - Player " + player.getPlayerId() + " remaining actions: " + player.getRemainingActions());
 
         if (player.getRemainingActions() <= 0) {
-            mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 行动完毕！");
-            // 弹窗通知
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " has finished all actions!");
             JOptionPane.showMessageDialog(mainFrame,
-                    "玩家" + player.getPlayerId() + "行动点已用完，即将进入抽牌阶段",
-                    "回合阶段提示",
+                    "Player " + player.getPlayerId() + " has no actions left. Moving to treasure draw phase.",
+                    "Turn Phase Notification",
                     JOptionPane.INFORMATION_MESSAGE);
-            // 进入下一阶段
+            // Proceed to next phase
             handleDrawTreasurePhase();
         } else {
-            mainFrame.addConsoleMessage("剩余行动点：" + player.getRemainingActions());
+            mainFrame.addConsoleMessage("Remaining actions: " + player.getRemainingActions());
         }
     }
 
 
-    /************ 回合、阶段主流程 ************/
-    // 抽宝藏卡阶段
+    /************ Main Turn/Phase Logic ************/
+
+    /**
+     * Treasure draw phase for the current player.
+     */
     private void handleDrawTreasurePhase() {
         Player curr = game.getCurrentPlayer();
 
-        // 弹窗通知进入抽牌阶段
+        // Notify phase change
         JOptionPane.showMessageDialog(mainFrame,
-                "玩家" + curr.getPlayerId() + "进入抽宝藏卡阶段",
+                "Player " + curr.getPlayerId() + " is now drawing treasure cards.",
                 "回合阶段提示",
                 JOptionPane.INFORMATION_MESSAGE);
 
-        // 抽两张宝藏卡
+        // Draw two treasure cards
         game.drawTreasureCardsForTurn(curr);
 
-        // 检查手牌上限
+        // Check for hand limit
         if (curr.handExceedsLimit()) {
-            // 通知Game处理弃牌
+            // Notify the game to handle discard
             game.notifyPlayerMustDiscard(curr);
         } else {
             handleFloodPhase();
         }
     }
 
-    // 洪水阶段
+    /**
+     * Flood phase: handle flood cards and board update.
+     */
     private void handleFloodPhase() {
-        // 弹窗通知进入洪水阶段
         JOptionPane.showMessageDialog(mainFrame,
-                "进入洪水阶段",
-                "回合阶段提示",
+                "Entering the flood phase.",
+                "Turn Phase Notification",
                 JOptionPane.INFORMATION_MESSAGE);
 
         int count = game.getWaterLevel().getFloodCardsCount();
         for (int i = 0; i < count; i++) {
-            game.drawFloodCards();// 内部已处理flood状态与联动
+            game.drawFloodCards(); // Internally manages flood state and interactions
         }
         mainFrame.updateBoard(game.getBoard());
 
-        // 判定胜负
+        // Check for win/lose conditions
         if (game.checkWinCondition()) {
-            announceGameEnd(true, "4宝+全员登船+直升机，胜利！");
+            announceGameEnd(true, "Collected 4 treasures, all players on helipad, win by helicopter lift!");
             return;
         }
         if (game.checkLoseCondition()) {
-            announceGameEnd(false, "游戏失败条件达成！");
+            announceGameEnd(false, "Game lost condition met!");
             return;
         }
-        // 正常进行下一轮：切换玩家并开始新回合
+        // Proceed to next player turn as usual
         advanceToNextPlayerTurn();
     }
 
     /**
-     * 推进到下一个玩家
+     * Advance to the next player's turn.
      */
     private void advanceToNextPlayerTurn() {
-        // 让Game更新当前玩家索引
+        // Update current player index in Game
         int nextIndex = (game.getCurrentPlayerIndex() + 1) % game.getPlayers().size();
         game.setCurrentPlayerIndex(nextIndex);
 
-        // 弹窗通知玩家更换
+        // Notify player change
         JOptionPane.showMessageDialog(mainFrame,
-                "轮到玩家 " + (nextIndex + 1) + " 的回合",
-                "玩家更换提示",
+                "It's now Player " + (nextIndex + 1) + "'s turn.",
+                "Player Change Notification",
                 JOptionPane.INFORMATION_MESSAGE);
 
         handleStartPlayerTurn();
     }
 
-    // 新玩家回合开始
+    /**
+     * Start the current player's turn.
+     */
     private void handleStartPlayerTurn() {
         Player curr = game.getCurrentPlayer();
         curr.resetActionsForTurn();
-        mainFrame.addConsoleMessage("轮到玩家 " + curr.getPlayerId());
+        mainFrame.addConsoleMessage("It's Player " + curr.getPlayerId());
         updateAllUI();
-        // 通知游戏回合开始
+        // Notify game logic
         game.notifyTurnStarted(curr);
     }
 
-    // 结束玩家回合（如由按钮控制）
+    /**
+     * End the current player's turn on manual input (e.g., via button).
+     */
     public void endPlayerTurn() {
-        mainFrame.addConsoleMessage("玩家 " + game.getCurrentPlayer().getPlayerId() + " 主动结束本回合。");
-        game.getTurnManager().nextPhase(); // 进入下一阶段
+        mainFrame.addConsoleMessage("Player " + game.getCurrentPlayer().getPlayerId() + " ended their turn manually.");
+        game.getTurnManager().nextPhase(); // Advance to next phase
     }
 
-    /************ 工具&流程方法 ************/
-    // 游戏结束
+    /************ Utility and Helper Methods ************/
+
+    /**
+     * Announce game end with the specified result and reason.
+     *
+     * @param win Whether the game was won
+     * @param reason The reason for game end
+     */
     private void announceGameEnd(boolean win, String reason) {
         if (win) {
             game.setGameState(GameState.WON);
@@ -205,21 +236,23 @@ public class GameController {
         }
     }
 
-    // 刷新所有与UI相关内容
+    /**
+     * Refresh all game and player info in the UI.
+     */
     private void updateAllUI() {
         mainFrame.updateBoard(game.getBoard());
         mainFrame.updateWaterLevel(game.getWaterLevel().getCurrentLevel());
         mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
-        // 可拓展：更新玩家信息面板、卡牌面板等
+        // Extendable: update player info panel, card panel, etc.
     }
 
     public void handleCollectTreasure() {
         Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0) {
-            // 检查是否可以收集宝藏
+            // Check if treasure can be collected
             if (player.canCollectTreasure()) {
                 if (player.collectTreasure()) {
-                    mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 收集了宝藏");
+                    mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " collected a treasure.");
                     checkAfterPlayerAction(player);
                 }
             }
@@ -230,7 +263,7 @@ public class GameController {
         Player player = game.getCurrentPlayer();
         if (player.getRemainingActions() > 0) {
             player.useSpecialAbility(targetTile);
-            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了特殊能力");
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " used a special ability.");
             checkAfterPlayerAction(player);
         }
     }
@@ -249,7 +282,7 @@ public class GameController {
         Tile targetTile = game.getBoard().getTileAt(row, col);
         if (targetTile != null && card instanceof model.card.HelicopterLiftCard) {
             if (((model.card.HelicopterLiftCard) card).use(player, targetTile)) {
-                mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了直升机卡移动到 " + targetTile.getType().getDisplayName());
+                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " used Helicopter Lift to move to " + targetTile.getType().getDisplayName());
                 checkAfterPlayerAction(player);
             }
         }
@@ -260,7 +293,7 @@ public class GameController {
         Tile targetTile = game.getBoard().getTileAt(row, col);
         if (targetTile != null && card instanceof model.card.SandbagCard) {
             if (((model.card.SandbagCard) card).use(player, targetTile)) {
-                mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 使用了沙袋卡在 " + targetTile.getType().getDisplayName());
+                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " used Sandbag on " + targetTile.getType().getDisplayName());
                 checkAfterPlayerAction(player);
             }
         }
@@ -268,11 +301,11 @@ public class GameController {
 
     public void enterShoreUpMode() {
         game.getTurnManager().setCurrentAction(model.TurnManager.ActionType.SHORE_UP);
-        mainFrame.addConsoleMessage("进入排水模式");
+        mainFrame.addConsoleMessage("Entered shore up mode.");
     }
 
     public void enterNavigatorMode() {
         game.getTurnManager().setCurrentAction(model.TurnManager.ActionType.NAVIGATOR);
-        mainFrame.addConsoleMessage("进入导航员模式");
+        mainFrame.addConsoleMessage("Entered navigator mode.");
     }
 }

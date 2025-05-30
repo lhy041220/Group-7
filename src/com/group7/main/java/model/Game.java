@@ -7,7 +7,6 @@ import model.card.HelicopterLiftCard;
 import view.gamePanel.MainFrame;
 import view.dialog.DiscardDialog;
 
-
 import lombok.Getter;
 import model.enums.GameState;
 import java.util.Queue;
@@ -27,7 +26,7 @@ public class Game {
 
     private static Game instance;
     private MainFrame mainFrame;
-    private boolean afterFloodCardDrawn = false;  // 标记是否刚抽取了洪水卡
+    private boolean afterFloodCardDrawn = false;  // Marker for whether a flood card was just drawn
 
     public static Game getInstance() {
         return instance == null ? new Game() : instance;
@@ -38,7 +37,6 @@ public class Game {
     private List<Player> players;
     private boolean gameOver;
     private Deck<HandCard> treasureDeck;
-
     private Deck<FloodCard> floodDeck;
     private TurnManager turnManager;
 
@@ -47,7 +45,6 @@ public class Game {
 
     @Setter
     private GameState gameState;
-
 
     private final List<GameEventListener> eventListeners = new ArrayList<>();
 
@@ -63,7 +60,7 @@ public class Game {
         gameOver = false;
         turnManager = new TurnManager(this, players);
 
-        // 初始化牌库
+        // Initialize decks
         initializeDecks();
     }
 
@@ -84,22 +81,21 @@ public class Game {
     }
 
     private void initializeDecks() {
-        // 初始化宝藏牌库
-        // 初始化特殊卡牌库
+        // Initialize treasure deck and special card deck
         initializeTreasureDeck();
-        // 初始化洪水牌库
+        // Initialize flood deck
         initializeFloodDeck();
     }
 
     /**
-     * 初始化宝藏牌库
-     * 包括：各种宝藏卡、特殊卡（直升机、沙袋、水位上升）
+     * Initialize the treasure deck
+     * Includes: treasure cards of each type and special cards (helicopter, sandbag, water rise)
      */
     private void initializeTreasureDeck() {
-        // 添加宝藏卡
+        // Add treasure cards
         for (TreasureType type : TreasureType.values()) {
             if (type != TreasureType.NONE) {
-                // 每种宝藏5张牌
+                // 5 cards for each treasure type
                 for (int i = 0; i < 5; i++) {
                     treasureDeck.addCard(new TreasureCard(
                             type.name() + " Card",
@@ -110,48 +106,47 @@ public class Game {
             }
         }
 
-        // 添加特殊卡
-        // 3张直升机救援卡
+        // Add special cards
+        // 3 Helicopter Lift cards
         for (int i = 0; i < 3; i++) {
             treasureDeck.addCard(new HelicopterLiftCard());
         }
 
-        // 2张沙袋卡
+        // 2 Sandbag cards
         for (int i = 0; i < 2; i++) {
             treasureDeck.addCard(new SandbagCard());
         }
 
-        // 3张水位上升卡
+        // 3 Water Rise cards
         for (int i = 0; i < 3; i++) {
             treasureDeck.addCard(new WaterRiseCard());
         }
 
-        // 洗牌
+        // Shuffle the deck
         treasureDeck.shuffle();
     }
 
     /**
-     * 初始化洪水牌库
-     * 每个板块对应一张洪水卡
+     * Initialize the flood deck
+     * Each tile has a corresponding flood card
      */
     private void initializeFloodDeck() {
-        // 遍历所有板块类型，为每个板块创建对应的洪水卡
+        // For each tile, create corresponding flood card if it actually exists on the board
         for (TileType tileType : TileType.values()) {
             if (tileType != TileType.NONE) {
-                // 只为实际存在的板块创建洪水卡
                 Tile tile = board.getTileByType(tileType);
                 if (tile != null) {
                     floodDeck.addCard(new FloodCard(tileType, tileType.name()));
                 }
             }
         }
-        // 洗牌
+        // Shuffle the deck
         floodDeck.shuffle();
     }
 
     /**
-     * 给每个玩家发初始卡牌
-     * 每个玩家2张牌
+     * Deal initial cards to players.
+     * Each player gets 2 cards.
      */
     private void dealInitialCards() {
         for (Player player : players) {
@@ -165,25 +160,25 @@ public class Game {
     }
 
     /**
-     * 处理抽到水位上升卡的情况
-     * @param card 抽到的水位上升卡
-     * @param isSecondCard 是否是同一回合抽到的第二张水位上升卡
+     * Handle the event of drawing a Water Rise card.
+     * @param card The Water Rise card drawn
+     * @param isSecondCard Whether it's the second Water Rise card drawn this turn
      */
     private void handleWaterRiseCard(WaterRiseCard card, boolean isSecondCard) {
-        // 如果是第二张水位上升卡，只上升水位，不重洗洪水牌
+        // If it's the second Water Rise card in the turn, only increase water level, no reshuffle
         if (isSecondCard) {
             waterLevel.tryRise();
         } else {
-            // 正常执行水位上升卡效果
+            // Normally, perform all Water Rise effects
             card.useCard(players.get(currentPlayerIndex));
         }
-        // 将卡牌放入弃牌堆
+        // Add card to discard pile
         treasureDeck.discard(card);
     }
 
     /**
-     * 抽取宝藏卡并处理特殊情况（如水位上升卡）
-     * @return 抽到的卡牌，如果是水位上升卡则返回null
+     * Draw a treasure card and handle special cases (such as Water Rise cards).
+     * @return The drawn card, or null if it's a Water Rise card.
      */
     public HandCard drawTreasureCard() {
         HandCard card = treasureDeck.drawCard();
@@ -191,7 +186,7 @@ public class Game {
             return null;
         }
 
-        // 处理水位上升卡
+        // Handle Water Rise card
         if (card instanceof WaterRiseCard) {
             handleWaterRiseCard((WaterRiseCard) card, false);
             return null;
@@ -200,23 +195,23 @@ public class Game {
         return card;
     }
     /**
-     * 重置洪水卡抽取状态
-     * 在每个玩家回合开始时调用
+     * Reset the state of flood card drawing.
+     * Should be called at the start of each player's turn.
      */
     public void resetFloodCardState() {
         this.afterFloodCardDrawn = false;
     }
 
     /**
-     * 玩家回合抽取两张宝藏卡
-     * @param player 当前玩家
+     * Draw two treasure cards for the player's turn.
+     * @param player The current player.
      */
     public void drawTreasureCardsForTurn(Player player) {
-        // 重置洪水卡状态
+        // Reset flood card state
         resetFloodCardState();
         boolean drewWaterRiseFirst = false;
 
-        // 抽第一张牌
+        // Draw first card
         HandCard firstCard = drawTreasureCard();
         if (firstCard instanceof WaterRiseCard) {
             drewWaterRiseFirst = true;
@@ -224,28 +219,28 @@ public class Game {
             player.addCardToHand(firstCard);
         }
 
-        // 抽第二张牌
+        // Draw second card
         HandCard secondCard = drawTreasureCard();
         if (secondCard instanceof WaterRiseCard && drewWaterRiseFirst) {
-            // 如果是第二张水位上升卡，特殊处理
+            // If it's the second Water Rise card in this turn, handle specially
             handleWaterRiseCard((WaterRiseCard) secondCard, true);
         } else if (secondCard != null) {
             player.addCardToHand(secondCard);
         }
 
-        // 检查手牌上限
+        // Check hand limit
         if (player.handExceedsLimit()) {
-            // TODO: 触发弃牌对话框
+            // TODO: Trigger discard dialog
             notifyPlayerMustDiscard(player);
         }
     }
 
     private void initializePlayers(int numPlayers) {
-        // 创建玩家并安置到起始瓦片
+        // Create and position players at starting tiles
     }
 
     public void startGame(int numPlayers) {
-        // 初始化玩家位置
+        // Initialize player positions
         if (1 < numPlayers && numPlayers < 5) {
             initializePlayers(numPlayers);
         } else {
@@ -254,23 +249,23 @@ public class Game {
 
         gameState = GameState.RUNNING;
 
-        // 初始化玩家list
-        players.clear(); // 清除之前的玩家
+        // Initialize players list
+        players.clear();
         for (int i = 0; i < numPlayers; i++) {
             Player player = new Player(i + 1, board.getTileByType(TileType.CORAL_PALACE));
             players.add(player);
         }
 
-        // 弹窗选择起始玩家
+        // Dialog to select starting player
         selectStartingPlayer();
-        // 洗牌
+        // Shuffle decks
         treasureDeck.shuffle();
         floodDeck.shuffle();
 
-        // 初始洪水
+        // Initial flood
         drawInitialFloodCards();
 
-        // 给玩家发初始卡牌
+        // Deal initial cards
         dealInitialCards();
 
         turnManager = new TurnManager(this, players);
@@ -278,41 +273,42 @@ public class Game {
     }
 
     /**
-     * 弹窗选择起始玩家，并调整玩家顺序     */
+     * Dialog for selecting starting player and adjusting player order
+     */
     private void selectStartingPlayer() {
-        String[] playerNames = players.stream().map(p -> "玩家" + p.getPlayerId()).toArray(String[]::new);
+        String[] playerNames = players.stream().map(p -> "Player " + p.getPlayerId()).toArray(String[]::new);
         int startIdx = JOptionPane.showOptionDialog(
-                null, "请选择起始玩家", "起始玩家选择",
+                null, "Please select the starting player", "Select Starting Player",
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
                 null, playerNames, playerNames[0]
         );
         if (startIdx >= 0) {
-            // 调整玩家顺序，使选中的玩家成为第一个
+            // Adjust player order so the selected player is first
             Collections.rotate(players, -startIdx);
             currentPlayerIndex = 0;
         }
     }
 
     /**
-     * 回合通知方法
+     * Notifies listeners of turn start and updates UI.
      */
     public void notifyTurnStarted(Player player) {
         if (mainFrame != null) {
             mainFrame.getPlayerInfoPanel().updatePlayerInfos(players, currentPlayerIndex);
-            mainFrame.addConsoleMessage("轮到玩家" + player.getPlayerId() + "行动");
-            mainFrame.updateBoard(getBoard()); // 同步刷新游戏板
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + "'s turn started");
+            mainFrame.updateBoard(getBoard());
         }
     }
 
     public void notifyPhaseChanged(TurnManager.TurnPhase phase) {
-        // 通知GameController更新UI
+        // Notify GameController to update UI
         if (mainFrame != null) {
-            mainFrame.updateBoard(getBoard()); // 同步刷新游戏板
+            mainFrame.updateBoard(getBoard());
         }
     }
 
     /**
-     * 处理玩家手牌超限的情况
+     * Handle when a player's hand exceeds the limit.
      */
     public void notifyPlayerMustDiscard(Player player) {
         if (mainFrame == null) return;
@@ -326,7 +322,7 @@ public class Game {
 
                 @Override
                 public void onSpecialCardUsed(SpecialCard card) {
-                    // 使用特殊卡
+                    // Use the special card
                     card.use(player);
                 }
             });
@@ -335,37 +331,37 @@ public class Game {
     }
 
     /**
-     * 玩家弃掉一张手牌
+     * Player discards a card
      */
     public void playerDiscardHandCard(Player player, HandCard cardToDiscard) {
-        // 如果是特殊卡，允许玩家在弃牌前使用
+        // If it's a special card, allow player to use it before discarding
         if (cardToDiscard instanceof SpecialCard) {
             SpecialCard specialCard = (SpecialCard) cardToDiscard;
             if (specialCard.canBeUsedNow(player)) {
                 specialCard.use(player);
-                return; // 使用后卡牌会自动进入弃牌堆
+                return; // Used special card will be discarded automatically
             }
         }
 
         player.discardCard(cardToDiscard);
         treasureDeck.discard(cardToDiscard);
 
-        // 通知监听器
+        // Notify event listeners
         for (GameEventListener listener : eventListeners) {
             listener.onCardDiscarded(player, cardToDiscard);
         }
     }
 
-    // 检查是否获得某个宝藏
+    // Check if a specific treasure has been obtained
     private boolean hasTreasure(TreasureType treasureType) {
-        // 你的代码没有全局已获得宝藏集合，所以遍历所有玩家手中手牌
+        // No global collection of obtained treasures; check all players' hands
         for (Player player : players) {
             if (player.hasCollectedTreasure(treasureType)) return true;
         }
         return false;
     }
 
-    // 检查所有玩家是否都在愚者着陆点
+    // Check if all players are at Fool's Landing
     private boolean allPlayersAtHelipad() {
         for (Player player : players) {
             Tile curr = player.getCurrentTile();
@@ -374,7 +370,7 @@ public class Game {
         return true;
     }
 
-    // 任一玩家是否有直升机牌
+    // Check if any player has a helicopter card
     private boolean anyPlayerHasHelicopter() {
         for (Player player : players) {
             for (Card card : player.getHand()) {
@@ -385,7 +381,10 @@ public class Game {
     }
 
     /**
-     * 检查游戏胜利条件（有四宝、全员到愚者着陆点、手里有直升机卡）
+     * Check for win condition:
+     * - All four treasures obtained
+     * - All players at Fool's Landing
+     * - At least one Helicopter card in hand
      */
     public boolean checkWinCondition() {
         return hasTreasure(TreasureType.EARTH) &&
@@ -397,42 +396,42 @@ public class Game {
     }
 
     /**
-     * 检查游戏失败条件
+     * Check for lose condition.
      */
     public boolean checkLoseCondition() {
-        // 1. 愚者着陆点沉没
+        // 1. Fool's Landing is sunk
         if (board.isHelipadSunk()) {
-            triggerGameFailure("愚者着陆点沉没");
+            triggerGameFailure("Fool's Landing is sunk");
             return true;
         }
 
-        // 2. 某种宝藏未获得且两块宝藏板块全部沉没
+        // 2. A treasure cannot be obtained and both related tiles are sunk
         for (TreasureType type : TreasureType.values()) {
             if (type == TreasureType.NONE) continue;
             if (!hasTreasure(type) && board.isAllTreasureTilesSunk(type)) {
-                triggerGameFailure("宝藏 " + type + " 已不可获得");
+                triggerGameFailure("Treasure " + type + " can no longer be obtained");
                 return true;
             }
         }
 
-        // 3. 有玩家无法移动（被困，不可达，也可补充diver特例）
+        // 3. Any player is trapped (cannot move). Add diver exceptions as needed.
         for (int i = 0; i < players.size(); i++) {
             Player player = players.get(i);
             if (!canPlayerEscape(player)) {
-                    triggerGameFailure("玩家" + (i + 1) + " [" + player.getRole() + "] 已被困，游戏失败！");
-                    return true;
-                }
+                triggerGameFailure("Player " + (i + 1) + " [" + player.getRole() + "] is trapped - Game Over!");
+                return true;
+            }
         }
 
-        // 4. 水位到顶
+        // 4. Water level reaches the top
         if (waterLevel.getCurrentLevel() >= 9) {
-            triggerGameFailure("水位到顶");
+            triggerGameFailure("Water level reached maximum");
             return true;
         }
 
-        // 5. 宝藏牌抽光且弃牌堆也空，并且还没赢
+        // 5. No treasure cards left (both deck and discard) and not won yet
         if (treasureDeck.getRemainingCards() == 0 && treasureDeck.getDiscardPileSize() == 0) {
-            triggerGameFailure("宝藏牌抽光且弃牌堆也已用完");
+            triggerGameFailure("All treasure cards depleted and discard pile empty");
             return true;
         }
 
@@ -440,7 +439,7 @@ public class Game {
     }
 
     /**
-     * 失败事件钩子分发
+     * Broadcast a failure event to all listeners.
      */
     private void triggerGameFailure(String reason) {
         for (GameEventListener listener : eventListeners) {
@@ -450,80 +449,80 @@ public class Game {
     }
 
     /**
-     * 淹没板块
+     * Flood (submerge) a tile.
      */
     public void floodTile(Tile tile) {
-        // 实现瓦片淹没逻辑
+        // Implement flood tile logic here.
     }
 
     private void drawInitialFloodCards() {
-        // 抽取初始的洪水卡牌并淹没对应的瓦片
+        // Draw initial flood cards and flood the corresponding tiles.
     }
 
-
     public void playTurn(Player player) {
-        // 1. 回合开始前触发钩子
+        // 1. Trigger turn start event for listeners
         for (GameEventListener listener : eventListeners) {
-            listener.onTurnStart(player, round);//假如你有round变量，否则传当前下标或0
+            listener.onTurnStart(player, round);
         }
-        // 2. 行动阶段（玩家可以移动、排水、交换卡牌等）
-        // 3. 抽取宝藏卡牌
+        // 2. Action phase (move, shore up, exchange cards, etc.)
+        // 3. Draw treasure cards
         for (int i = 0; i < 2; i++) {
             drawTreasureCard();
         }
 
-        // 4. 抽取洪水卡牌
+        // 4. Draw flood cards
         drawFloodCards();
-        // 5. 水位可能上升
+        // 5. Water level may rise
 
-        // 6. 检查游戏结束条件
+        // 6. Check game end conditions
         checkGameEnd();
 
-        // 通知回合结束
+        // Notify end of turn
         for (GameEventListener listener : eventListeners) {
             listener.onTurnEnd(player, round);
         }
     }
 
     /**
-     * 根据当前水位抽取对应数量的洪水卡牌
+     * Draw flood cards according to the current water level.
      */
     public void drawFloodCards() {
         int cardsToDrawCount = waterLevel.getFloodCardsCount();
         for (int i = 0; i < cardsToDrawCount; i++) {
             FloodCard card = floodDeck.drawCard();
             if (card == null) {
-                triggerGameFailure("洪水牌和弃牌堆都用光，游戏失败！");
+                triggerGameFailure("All flood cards and discard pile exhausted - Game Over!");
                 break;
             }
 
-            // 设置状态为已抽取洪水卡
+            // Set state to indicate a flood card was drawn
             this.afterFloodCardDrawn = true;
 
-            // 处理洪水卡牌效果
+            // Process flood card effect
             Tile floodedTile = board.getTileByType(card.getTileType());
             floodedTile.flood();
 
-            // 检查瓦片上是否有玩家，可能需要救援
+            // Check if there are any players on the flooded tile and handle possible rescue
             checkPlayersOnFloodedTile(floodedTile);
 
-            // 把本次抽的洪水牌丢进弃牌堆
+            // Add the drawn flood card to the discard pile
             floodDeck.discard(card);
         }
     }
 
     private void checkPlayersOnFloodedTile(Tile floodedTile) {
-        // 检查并处理在被淹没瓦片上的玩家
+        // Check and handle players located on the flooded tile
     }
 
     private void checkGameEnd() {
-        // 检查胜利条件：是否收集了所有宝藏并且全部玩家到达直升机起飞点
+        // Check win condition: all treasures collected and all players at Fool's Landing
 
-        // 检查失败条件
-        // 1. Fool's Landing被淹没
-        // 2. 任何玩家溺水且无法被救援
-        // 3. 水位达到最高点
-        // 4. 某种宝藏的全部收集卡都无法获得
+        // Check lose conditions:
+        // 1. Fool's Landing flooded
+        // 2. Any player drowns and can't be rescued
+        // 3. Water level reaches the top
+        // 4. All cards for a treasure become unavailable
+
         if (checkWinCondition()) {
             for (GameEventListener listener : eventListeners) {
                 listener.onGameVictory();
@@ -538,9 +537,9 @@ public class Game {
 
     public void increaseWaterLevel() {
         boolean isGameOver = !waterLevel.tryRise();
-        // 检查水位上升后是否导致游戏结束
+        // Check if rising water level leads to game over
         if (isGameOver) {
-            triggerGameFailure("水位已达顶，游戏结束");
+            triggerGameFailure("Water level has reached maximum - Game Over");
             gameOver = true;
         }
     }
@@ -553,20 +552,20 @@ public class Game {
     }
 
     /**
-     * 细化职业能力的"玩家是否还能逃脱"的判定。适配所有职业。
-     * @param player 检查的玩家
-     * @return true=还能逃脱；false=被困
+     * Determines if a player can escape according to their role ability.
+     * @param player The player to check.
+     * @return true if the player can escape, false if trapped.
      */
     public boolean canPlayerEscape(Player player) {
         Role role = player.getRole();
         Tile currTile = player.getCurrentTile();
 
         if (currTile == null || !currTile.isNavigable()) {
-            // 玩家当前板块已沉没或不可通行，直接认为被困
+            // The player's current tile has sunk or is not passable, so is trapped
             return false;
         }
 
-        // 飞行家：任意未沉没格都能飞
+        // Pilot: Can fly to any non-sunk tile
         if (role == Role.PILOT) {
             for (Tile tile : board.getAllTiles()) {
                 if (tile != null && tile.isNavigable()) {
@@ -576,7 +575,7 @@ public class Game {
             return false;
         }
 
-        // 潜水员：BFS所有相连的sunk/flooded格，能爬出去就未被困
+        // Diver: Use BFS to find if can reach a navigable tile through sunk/flooded tiles
         if (role == Role.DIVER) {
             Set<Tile> visited = new HashSet<>();
             Queue<Tile> queue = new LinkedList<>();
@@ -590,7 +589,7 @@ public class Game {
                     if (adj.isNavigable()) {
                         return true;
                     }
-                    // 能穿过被水淹和沉没的格
+                    // Can move through flooded and sunk tiles
                     if (adj.isFlooded() || adj.isSunk()) {
                         queue.add(adj);
                         visited.add(adj);
@@ -600,19 +599,19 @@ public class Game {
             return false;
         }
 
-        // 探险家：可斜向移动（如果你Role. EXPLORER加了这个功能，放开此分支扩展）
-    /*
-    if (role == Role.EXPLORER) {
-        for (Tile adj : board.getDiagonalAndOrthogonalTiles(currTile)) { // 你文档10未定义该方法，如有自己实现
-            if (adj != null && adj.isNavigable()) {
-                return true;
+        // Explorer: Can move diagonally (if you implemented this feature for Role.EXPLORER, uncomment and adjust)
+        /*
+        if (role == Role.EXPLORER) {
+            for (Tile adj : board.getDiagonalAndOrthogonalTiles(currTile)) {
+                if (adj != null && adj.isNavigable()) {
+                    return true;
+                }
             }
+            return false;
         }
-        return false;
-    }
-    */
+        */
 
-        // 其他职业：只要正方向有一格能走，就算没被困
+        // Other roles: Only need at least one orthogonally adjacent navigable tile to escape
         for (Tile adj : board.getAdjacentTiles(currTile)) {
             if (adj != null && adj.isNavigable()) {
                 return true;
@@ -622,25 +621,25 @@ public class Game {
     }
 
     /**
-     * 触发游戏结束
-     * @param message 游戏结束的原因或胜利信息
+     * Triggers game over with the specified message.
+     * @param message The reason for game over or win information.
      */
     public void triggerGameOver(String message) {
         gameOver = true;
 
-        // 设置游戏状态
-        if (message.contains("恭喜")) {
+        // Set game state
+        if (message.contains("Congratulations")) {
             gameState = GameState.WON;
         } else {
             gameState = GameState.LOST;
         }
 
-        // 通知所有监听器游戏结束
+        // Notify all listeners that the game is over
         for (GameEventListener listener : eventListeners) {
             listener.onGameOver(message);
         }
 
-        // 通知主界面更新
+        // Notify the main UI to update
         if (mainFrame != null) {
             SwingUtilities.invokeLater(() -> {
                 mainFrame.showGameOverDialog(message);

@@ -10,41 +10,41 @@ import javax.swing.*;
 
 public class SandbagCard extends SpecialCard {
     public SandbagCard() {
-        super("沙袋", "移除任意一个板块上的水");
-        this.canBeUsedAfterFlood = false;  // 沙袋卡不能在看到洪水卡后使用
+        super("Sandbag", "Remove the water on any one of the plates");
+        this.canBeUsedAfterFlood = false;  // Sandbag cards cannot be used after seeing flood cards
     }
 
     @Override
     public void useCard(Player player) {
-        // 沙袋卡可以在任何时候使用，用于排干任意一个板块的水
-        // 注意：根据规则，不能在看到洪水卡后使用沙袋卡
+        // The sandbag card can be used at any time to drain the water from any plate
+        // Note: According to the rules, sandbag cards cannot be used after seeing flood cards
         Game game = Game.getInstance();
 
-        // 打开对话框让玩家选择要排水的板块
+        // Open the dialog box and let the player select the section to drain
         SwingUtilities.invokeLater(() -> {
             JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(game.getMainFrame());
             RoleActionDialog dialog = new RoleActionDialog(frame, player, new RoleActionDialog.ActionListener() {
                 @Override
                 public void onTileSelected(Tile tile) {
                     if (tile != null && tile.isFlooded()) {
-                        tile.shoreUp(); // 使用正确的方法名
+                        tile.shoreUp(); // Use the correct method name
                         game.getMainFrame().updateBoard(game.getBoard()); // 更新游戏板显示
                     }
                 }
 
                 @Override
                 public void onPlayerSelected(Player targetPlayer) {
-                    // 不需要选择玩家
+                    // There is no need to select players
                 }
 
                 @Override
                 public void onCardSelected(TreasureCard card) {
-                    // 不需要选择卡牌
+                    // There is no need to select cards
                 }
 
                 @Override
                 public void onActionCancelled() {
-                    // 取消行动时不做任何事
+                    // Do nothing when canceling the operation
                 }
             });
             dialog.setVisible(true);
@@ -52,9 +52,9 @@ public class SandbagCard extends SpecialCard {
     }
 
     /**
-     * 使用沙袋卡排干指定板块的水
-     * @param tile 目标板块
-     * @return 是否成功使用
+     * Use sandbag cards to drain the water from the designated sections
+     * @param tile Target section
+     * @return Whether was used successfully
      */
     public boolean useOnTile(Tile tile) {
         if (tile != null && tile.isFlooded()) {

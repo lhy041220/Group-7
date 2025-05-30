@@ -22,7 +22,7 @@ public class HelicopterLiftDialog extends JDialog {
     }
 
     public HelicopterLiftDialog(JFrame parent, Player currentPlayer, ActionListener listener) {
-        super(parent, "直升机救援", true);
+        super(parent, "Helicopter Rescue", true);
         this.game = Game.getInstance();
         this.currentPlayer = currentPlayer;
         this.actionListener = listener;
@@ -35,29 +35,29 @@ public class HelicopterLiftDialog extends JDialog {
     private void initComponents() {
         setLayout(new BorderLayout(10, 10));
 
-        // 创建主面板
+        // Main panel
         JPanel mainPanel = new JPanel(new GridLayout(2, 1, 10, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 玩家选择面板
+        // Player selection panel
         JPanel playerPanel = new JPanel();
         playerPanel.setLayout(new BoxLayout(playerPanel, BoxLayout.Y_AXIS));
-        playerPanel.setBorder(BorderFactory.createTitledBorder("选择要移动的玩家"));
+        playerPanel.setBorder(BorderFactory.createTitledBorder("Select players to move"));
 
-        // 添加所有玩家的复选框
+        // Add checkboxes for all players
         for (Player p : game.getPlayers()) {
-            JCheckBox checkBox = new JCheckBox(String.format("玩家 %d (%s)",
+            JCheckBox checkBox = new JCheckBox(String.format("Player %d (%s)",
                     p.getPlayerId(), p.getRole().getDisplayName()));
-            checkBox.setSelected(p == currentPlayer); // 默认选中当前玩家
+            checkBox.setSelected(p == currentPlayer); // By default, select the current player
             playerCheckBoxes.add(checkBox);
             playerPanel.add(checkBox);
         }
 
-        // 目标板块选择面板
+        // Tile selection panel
         JPanel tilePanel = new JPanel(new BorderLayout(5, 5));
-        tilePanel.setBorder(BorderFactory.createTitledBorder("选择目标板块"));
+        tilePanel.setBorder(BorderFactory.createTitledBorder("Select destination tile"));
 
-        // 获取所有可通行的板块
+        // Get all navigable tiles
         List<Tile> navigableTiles = game.getBoard().getAllNavigableTiles();
         tileList = new JList<>(navigableTiles.toArray(new Tile[0]));
         tileList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -79,10 +79,10 @@ public class HelicopterLiftDialog extends JDialog {
         mainPanel.add(playerPanel);
         mainPanel.add(tilePanel);
 
-        // 按钮面板
+        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        JButton confirmButton = new JButton("确认");
-        JButton cancelButton = new JButton("取消");
+        JButton confirmButton = new JButton("Confirm");
+        JButton cancelButton = new JButton("Cancel");
 
         confirmButton.addActionListener(e -> {
             Tile selectedTile = tileList.getSelectedValue();
@@ -98,14 +98,14 @@ public class HelicopterLiftDialog extends JDialog {
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(this,
-                            "请至少选择一个玩家",
-                            "提示",
+                            "Please select at least one player.",
+                            "Notice",
                             JOptionPane.WARNING_MESSAGE);
                 }
             } else {
                 JOptionPane.showMessageDialog(this,
-                        "请选择目标板块",
-                        "提示",
+                        "Please select a destination tile.",
+                        "Notice",
                         JOptionPane.WARNING_MESSAGE);
             }
         });
@@ -121,7 +121,7 @@ public class HelicopterLiftDialog extends JDialog {
         add(mainPanel, BorderLayout.CENTER);
         add(buttonPanel, BorderLayout.SOUTH);
 
-        // 设置对话框大小
+        // Set dialog size
         setSize(400, 500);
     }
 

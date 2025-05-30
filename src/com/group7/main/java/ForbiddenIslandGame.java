@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ForbiddenIslandGame {
-    // 自定义图片面板类
+    // Custom panel class for displaying rule images
     private static class RuleImagePanel extends JPanel {
         private BufferedImage currentImage;
         private int currentIndex = 0;
@@ -19,7 +19,7 @@ public class ForbiddenIslandGame {
 
         public RuleImagePanel() {
             setLayout(new BorderLayout());
-            // 加载所有规则图片
+            // Load all rule images
             for (int i = 1; i <= 8; i++) {
                 try {
                     BufferedImage img = ImageIO.read(new File("src/com/group7/resources/images/Rules/rule" + i + ".png"));
@@ -37,7 +37,7 @@ public class ForbiddenIslandGame {
         protected void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (currentImage != null) {
-                // 计算图片的缩放比例，保持宽高比
+                // Scale image to fit the panel, maintaining aspect ratio
                 double scale = Math.min(
                         (double) (getWidth() - 40) / currentImage.getWidth(),
                         (double) (getHeight() - 40) / currentImage.getHeight()
@@ -50,7 +50,6 @@ public class ForbiddenIslandGame {
                 g.drawImage(currentImage, x, y, width, height, this);
             }
         }
-
 
         public void nextImage() {
             if (!images.isEmpty()) {
@@ -67,26 +66,25 @@ public class ForbiddenIslandGame {
                 repaint();
             }
         }
-
     }
 
     private static void showRulesDialog(JFrame parent) {
-        JDialog rulesDialog = new JDialog(parent, "游戏规则", true);
+        JDialog rulesDialog = new JDialog(parent, "Game Rules", true);
         rulesDialog.setSize(900, 700);
         rulesDialog.setLocationRelativeTo(parent);
 
-        // 创建自定义图片面板
+        // Custom image panel
         RuleImagePanel imagePanel = new RuleImagePanel();
 
-        // 创建按钮面板
+        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout());
-        JButton prevButton = new JButton("上一页");
-        JButton nextButton = new JButton("下一页");
-        JButton closeButton = new JButton("关闭");
+        JButton prevButton = new JButton("Previous");
+        JButton nextButton = new JButton("Next");
+        JButton closeButton = new JButton("Close");
 
-        // 设置按钮样式
+        // Button styles
         for (JButton button : new JButton[]{prevButton, nextButton, closeButton}) {
-            button.setFont(new Font("微软雅黑", Font.PLAIN, 14));
+            button.setFont(new Font("Arial", Font.PLAIN, 14));
             button.setPreferredSize(new Dimension(100, 30));
         }
 
@@ -110,7 +108,7 @@ public class ForbiddenIslandGame {
         coverFrame.setSize(800, 600);
         coverFrame.setLocationRelativeTo(null);
 
-        // 创建自定义面板来绘制背景
+        // Custom panel for background drawing
         JPanel backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -120,31 +118,31 @@ public class ForbiddenIslandGame {
                     g.drawImage(backgroundImage, 0, 0, getWidth(), getHeight(), this);
                 } catch (IOException e) {
                     e.printStackTrace();
-                    setBackground(Color.BLACK); // 如果图片加载失败，使用黑色背景
+                    setBackground(Color.BLACK); // Fallback to black background
                 }
             }
         };
         backgroundPanel.setLayout(null);
 
-        // 创建开始游戏按钮
-        JButton startButton = new JButton("开始游戏");
-        startButton.setFont(new Font("微软雅黑", Font.BOLD, 24));
+        // "Start Game" button
+        JButton startButton = new JButton("Start Game");
+        startButton.setFont(new Font("Arial", Font.BOLD, 24));
         startButton.setForeground(Color.WHITE);
         startButton.setBackground(new Color(200, 120, 0));
         startButton.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
         startButton.setFocusPainted(false);
         startButton.setBounds(300, 320, 200, 60);
 
-        // 创建游戏规则按钮
-        JButton rulesButton = new JButton("游戏规则");
-        rulesButton.setFont(new Font("微软雅黑", Font.BOLD, 24));
+        // "Rules" button
+        JButton rulesButton = new JButton("Game Rules");
+        rulesButton.setFont(new Font("Arial", Font.BOLD, 24));
         rulesButton.setForeground(Color.WHITE);
         rulesButton.setBackground(new Color(200, 120, 0));
         rulesButton.setBorder(BorderFactory.createLineBorder(Color.ORANGE, 2));
         rulesButton.setFocusPainted(false);
         rulesButton.setBounds(300, 420, 200, 60);
 
-        // 添加鼠标悬停效果
+        // Mouse hover effect
         java.awt.event.MouseAdapter hoverEffect = new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 ((JButton)evt.getSource()).setBackground(new Color(255, 150, 0));
@@ -154,7 +152,6 @@ public class ForbiddenIslandGame {
                 ((JButton)evt.getSource()).setBackground(new Color(200, 120, 0));
             }
         };
-
         startButton.addMouseListener(hoverEffect);
         rulesButton.addMouseListener(hoverEffect);
 
@@ -177,11 +174,11 @@ public class ForbiddenIslandGame {
         GameController gameController = new GameController(game, mainFrame);
 
         gameController.initializeViewFrame();
-        String[] options = {"2人", "3人", "4人"};
+        String[] options = {"2 Players", "3 Players", "4 Players"};
         int choice = JOptionPane.showOptionDialog(
                 null,
-                "请选择玩家人数",
-                "游戏设置",
+                "Please select the number of players",
+                "Game Settings",
                 JOptionPane.DEFAULT_OPTION,
                 JOptionPane.QUESTION_MESSAGE,
                 null,
@@ -193,127 +190,126 @@ public class ForbiddenIslandGame {
             int playerNum = choice + 2;
             gameController.startGame(playerNum);
 
-        mainFrame.onCollectTreasureButtonClick.addListener(sender -> {
-            gameController.handleCollectTreasure();
-        });
+            mainFrame.onCollectTreasureButtonClick.addListener(sender -> {
+                gameController.handleCollectTreasure();
+            });
 
-        mainFrame.onUseSpecialAbilityButtonClick.addListener(sender -> {
-            gameController.handleUseSpecialAbility(null);
-        });
+            mainFrame.onUseSpecialAbilityButtonClick.addListener(sender -> {
+                gameController.handleUseSpecialAbility(null);
+            });
 
-        // 新增：主按钮事件绑定核心操作
-        mainFrame.onMoveButtonClick.addListener(sender -> {
-            MainFrame mf = MainFrame.getInstance();
-            mf.addConsoleMessage("请选择要移动到的格子");
-            mf.getGameBoardPanel().setMode(view.gamePanel.GameBoardPanel.Mode.MOVE);
-            // 高亮所有可移动格子
-            Player player = game.getCurrentPlayer();
-            java.util.List<Tile> movableTiles = new java.util.ArrayList<>();
-            for (Tile tile : game.getBoard().getAllTiles()) {
-                if (player.canMoveTo(tile) && tile != player.getCurrentTile()) {
-                    movableTiles.add(tile);
-                }
-            }
-            java.util.List<int[]> positions = new java.util.ArrayList<>();
-            for (Tile t : movableTiles) {
-                int[] pos = ((model.Board)game.getBoard()).getTilePosition(t);
-                if (pos != null) positions.add(pos);
-            }
-            mf.getGameBoardPanel().highlightTiles(positions);
-        });
-
-        // 设置地图点击事件
-        mainFrame.setTileClickEvent((row, col) -> {
-            if (mainFrame.getGameBoardPanel().getMode() == view.gamePanel.GameBoardPanel.Mode.MOVE) {
-                // 只允许点击高亮格子
-                if (!mainFrame.getGameBoardPanel().isTileHighlighted(row, col)) return;
-                Board board = game.getBoard();
-                Tile target = null;
-                try { target = board.getTile(row, col); } catch (Exception ignored) {}
-                if (target != null) {
-                    gameController.handlePlayerMove(target);
-                    mainFrame.getGameBoardPanel().clearHighlight();
-                }
-            }
-        });
-
-        mainFrame.onShoreUpButtonClick.addListener(sender -> {
-            Player player = game.getCurrentPlayer();
-            List<Tile> shoreableTiles = new ArrayList<>();
-            // 获取所有可排水目标
-            for (Tile tile : game.getBoard().getAllTiles()) {
-                if (player.canShoreUp(tile)) {
-                    shoreableTiles.add(tile);
-                }
-            }
-            if (shoreableTiles.isEmpty()) {
-                JOptionPane.showMessageDialog(mainFrame, "没有可排水的目标！", "提示", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            Tile selected = (Tile) JOptionPane.showInputDialog(
-                mainFrame,
-                "请选择要排水的格子：",
-                "排水",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                shoreableTiles.toArray(),
-                shoreableTiles.get(0)
-            );
-            if (selected != null) {
-                gameController.handlePlayerShoreUp(selected);
-            }
-        });
-        mainFrame.onGiveCardButtonClick.addListener(sender -> {
-            Player player = game.getCurrentPlayer();
-            List<Player> others = new ArrayList<>();
-            for (Player p : game.getPlayers()) {
-                if (p != player) {
-                    // 信使可以无视位置，其他角色必须同一格
-                    if (player.getRole() != null && player.getRole().getDisplayName().equals("信使")) {
-                        others.add(p);
-                    } else if (p.getCurrentTile() == player.getCurrentTile()) {
-                        others.add(p);
+            // Main button event bindings for core actions
+            mainFrame.onMoveButtonClick.addListener(sender -> {
+                MainFrame mf = MainFrame.getInstance();
+                mf.addConsoleMessage("Please select the tile to move to.");
+                mf.getGameBoardPanel().setMode(view.gamePanel.GameBoardPanel.Mode.MOVE);
+                // Highlight movable tiles
+                Player player = game.getCurrentPlayer();
+                java.util.List<Tile> movableTiles = new java.util.ArrayList<>();
+                for (Tile tile : game.getBoard().getAllTiles()) {
+                    if (player.canMoveTo(tile) && tile != player.getCurrentTile()) {
+                        movableTiles.add(tile);
                     }
                 }
-            }
-            List<model.card.TreasureCard> giveableCards = player.getGiveableTreasureCards();
-            if (others.isEmpty() || giveableCards.isEmpty()) {
-                JOptionPane.showMessageDialog(mainFrame, "没有可赠送的玩家或宝藏卡！", "提示", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            Player target = (Player) JOptionPane.showInputDialog(
-                mainFrame,
-                "请选择要赠送的玩家：",
-                "赠送卡牌",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                others.toArray(),
-                others.get(0)
-            );
-            if (target == null) return;
-            model.card.TreasureCard card = (model.card.TreasureCard) JOptionPane.showInputDialog(
-                mainFrame,
-                "请选择要赠送的宝藏卡：",
-                "赠送卡牌",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                giveableCards.toArray(),
-                giveableCards.get(0)
-            );
-            if (card == null) return;
-            if (player.giveCardToPlayer(target, card)) {
-                mainFrame.addConsoleMessage("玩家" + player.getPlayerId() + " 给 玩家" + target.getPlayerId() + " 赠送了卡牌");
-                mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
-            } else {
-                JOptionPane.showMessageDialog(mainFrame, "赠送失败，规则不符！", "提示", JOptionPane.WARNING_MESSAGE);
-            }
-        });
-        mainFrame.onCaptureTreasureButtonClick.addListener(sender -> {
-            gameController.handleCollectTreasure();
-        });
-        mainFrame.onEndTurnButtonClick.addListener(sender -> {
-            gameController.endPlayerTurn();
-        });
+                java.util.List<int[]> positions = new java.util.ArrayList<>();
+                for (Tile t : movableTiles) {
+                    int[] pos = ((model.Board)game.getBoard()).getTilePosition(t);
+                    if (pos != null) positions.add(pos);
+                }
+                mf.getGameBoardPanel().highlightTiles(positions);
+            });
+
+            // Set board click event
+            mainFrame.setTileClickEvent((row, col) -> {
+                if (mainFrame.getGameBoardPanel().getMode() == view.gamePanel.GameBoardPanel.Mode.MOVE) {
+                    if (!mainFrame.getGameBoardPanel().isTileHighlighted(row, col)) return;
+                    Board board = game.getBoard();
+                    Tile target = null;
+                    try { target = board.getTile(row, col); } catch (Exception ignored) {}
+                    if (target != null) {
+                        gameController.handlePlayerMove(target);
+                        mainFrame.getGameBoardPanel().clearHighlight();
+                    }
+                }
+            });
+
+            mainFrame.onShoreUpButtonClick.addListener(sender -> {
+                Player player = game.getCurrentPlayer();
+                List<Tile> shoreableTiles = new ArrayList<>();
+                // Find all shore-up targets
+                for (Tile tile : game.getBoard().getAllTiles()) {
+                    if (player.canShoreUp(tile)) {
+                        shoreableTiles.add(tile);
+                    }
+                }
+                if (shoreableTiles.isEmpty()) {
+                    JOptionPane.showMessageDialog(mainFrame, "No tiles can be shored up!", "Notice", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                Tile selected = (Tile) JOptionPane.showInputDialog(
+                        mainFrame,
+                        "Select a tile to shore up:",
+                        "Shore Up",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        shoreableTiles.toArray(),
+                        shoreableTiles.get(0)
+                );
+                if (selected != null) {
+                    gameController.handlePlayerShoreUp(selected);
+                }
+            });
+            mainFrame.onGiveCardButtonClick.addListener(sender -> {
+                Player player = game.getCurrentPlayer();
+                List<Player> others = new ArrayList<>();
+                for (Player p : game.getPlayers()) {
+                    if (p != player) {
+                        // Messenger may ignore tile position; others must be on same tile
+                        if (player.getRole() != null && player.getRole().getDisplayName().equals("Messenger")) {
+                            others.add(p);
+                        } else if (p.getCurrentTile() == player.getCurrentTile()) {
+                            others.add(p);
+                        }
+                    }
+                }
+                List<model.card.TreasureCard> giveableCards = player.getGiveableTreasureCards();
+                if (others.isEmpty() || giveableCards.isEmpty()) {
+                    JOptionPane.showMessageDialog(mainFrame, "No available players or treasure cards to give!", "Notice", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                Player target = (Player) JOptionPane.showInputDialog(
+                        mainFrame,
+                        "Select a player to give a card to:",
+                        "Give Card",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        others.toArray(),
+                        others.get(0)
+                );
+                if (target == null) return;
+                model.card.TreasureCard card = (model.card.TreasureCard) JOptionPane.showInputDialog(
+                        mainFrame,
+                        "Select a treasure card to give:",
+                        "Give Card",
+                        JOptionPane.PLAIN_MESSAGE,
+                        null,
+                        giveableCards.toArray(),
+                        giveableCards.get(0)
+                );
+                if (card == null) return;
+                if (player.giveCardToPlayer(target, card)) {
+                    mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " gave a card to Player " + target.getPlayerId());
+                    mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
+                } else {
+                    JOptionPane.showMessageDialog(mainFrame, "Failed to give the card! Check the rules.", "Notice", JOptionPane.WARNING_MESSAGE);
+                }
+            });
+            mainFrame.onCaptureTreasureButtonClick.addListener(sender -> {
+                gameController.handleCollectTreasure();
+            });
+            mainFrame.onEndTurnButtonClick.addListener(sender -> {
+                gameController.endPlayerTurn();
+            });
 
             mainFrame.setTileClickEvent((row, col) -> {
                 gameController.handleTileClick(row, col);

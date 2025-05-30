@@ -33,7 +33,7 @@ public class MainFrame extends JFrame {
     private MainFrame() {
         setTitle("Forbidden Island");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout(10, 10)); // 添加组件间距
+        setLayout(new BorderLayout(10, 10)); // Add spacing between components
 
         onMoveButtonClick = new Event();
         onShoreUpButtonClick = new Event();
@@ -47,16 +47,16 @@ public class MainFrame extends JFrame {
         addComponents();
         addAllListeners();
 
-        // 调整窗口大小以适应内容，并居中显示
+        // Adjust window size to fit content and center it
         pack();
         setLocationRelativeTo(null);
 
-        // 设置最小窗口大小
+        // Set minimum window size
         setMinimumSize(new Dimension(1200, 800));
     }
 
     /**
-     * 初始化所有面板组件
+     * Initialize all panel components
      */
     private void initComponents() {
         gameBoardPanel = new GameBoardPanel();
@@ -66,7 +66,7 @@ public class MainFrame extends JFrame {
         waterLevelPanel = new WaterLevelPanel();
         consolePanel = new ConsolePanel(this);
 
-        // 设置面板的首选大小
+        // Set preferred sizes of panels
         waterLevelPanel.setPreferredSize(new Dimension(200, 300));
         consolePanel.setPreferredSize(new Dimension(200, 300));
         playerInfoPanel.setPreferredSize(new Dimension(200, 0));
@@ -74,31 +74,31 @@ public class MainFrame extends JFrame {
     }
 
     /**
-     * 将所有面板添加到主窗口
+     * Add all panels to the main window
      */
     private void addComponents() {
-        // 创建左侧面板，包含水位面板和控制台面板
+        // Create left panel with water level and console panels
         JPanel leftPanel = new JPanel(new BorderLayout(0, 10));
         leftPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         leftPanel.add(waterLevelPanel, BorderLayout.NORTH);
         leftPanel.add(consolePanel, BorderLayout.CENTER);
 
-        // 创建中央面板，包含游戏板和卡片面板
+        // Create center panel with game board and card panel
         JPanel centerPanel = new JPanel(new BorderLayout(0, 10));
         centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // 创建一个包装游戏板的面板，用于居中显示
+        // Wrap game board for centering
         JPanel gameBoardWrapper = new JPanel(new GridBagLayout());
         gameBoardWrapper.add(gameBoardPanel);
         centerPanel.add(gameBoardWrapper, BorderLayout.CENTER);
         centerPanel.add(cardPanel, BorderLayout.SOUTH);
 
-        // 创建右侧面板
+        // Create right panel
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         rightPanel.add(playerInfoPanel, BorderLayout.CENTER);
 
-        // 添加所有面板到主窗口
+        // Add all panels to the main frame
         add(leftPanel, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
@@ -130,40 +130,40 @@ public class MainFrame extends JFrame {
     }
 
     /**
-     * 显示游戏结束对话框
-     * @param message 游戏结束的原因或胜利信息
+     * Show game over dialog
+     * @param message Reason for game over or victory message
      */
     public void showGameOverDialog(String message) {
-        // 禁用所有控制按钮
+        // Disable all control buttons
         controlPanel.setButtonsEnabled(false);
 
-        // 创建游戏结束对话框
-        JDialog dialog = new JDialog(this, "游戏结束", true);
+        // Create game over dialog
+        JDialog dialog = new JDialog(this, "Game Over", true);
         dialog.setLayout(new BorderLayout(10, 10));
 
-        // 创建消息面板
+        // Message panel
         JPanel messagePanel = new JPanel(new BorderLayout(10, 10));
         messagePanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // 添加消息标签
+        // Add message label
         JLabel messageLabel = new JLabel(message);
         messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
         messagePanel.add(messageLabel, BorderLayout.CENTER);
 
-        // 创建按钮面板
+        // Button panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        JButton closeButton = new JButton("关闭游戏");
+        JButton closeButton = new JButton("Close Game");
         closeButton.addActionListener(e -> {
             dialog.dispose();
             System.exit(0);
         });
         buttonPanel.add(closeButton);
 
-        // 添加面板到对话框
+        // Add panels to dialog
         dialog.add(messagePanel, BorderLayout.CENTER);
         dialog.add(buttonPanel, BorderLayout.SOUTH);
 
-        // 设置对话框属性
+        // Dialog properties
         dialog.pack();
         dialog.setLocationRelativeTo(this);
         dialog.setResizable(false);
@@ -202,3 +202,4 @@ public class MainFrame extends JFrame {
     }
 
 }
+
