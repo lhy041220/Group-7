@@ -69,8 +69,26 @@ public enum Role implements RoleAbility {
 
                     @Override
                     public void onPlayerSelected(Player targetPlayer) {
-                        if (targetPlayer != null && destinationTile != null) {
-                            targetPlayer.moveToTile(destinationTile);
+                        if (targetPlayer != null) {
+                            // 连续两次弹窗选择目标格子
+                            for (int i = 0; i < 2; i++) {
+                                List<Tile> movable = game.getBoard().getMovableTilesForPlayer(targetPlayer);
+                                if (movable.isEmpty()) break;
+                                Tile dest = (Tile) JOptionPane.showInputDialog(
+                                        frame,
+                                        "Navigator: Select tile to move Player " + targetPlayer.getPlayerId() + " (step " + (i+1) + "):",
+                                        "Navigator Move",
+                                        JOptionPane.PLAIN_MESSAGE,
+                                        null,
+                                        movable.toArray(),
+                                        movable.get(0)
+                                );
+                                if (dest != null && targetPlayer.canMoveTo(dest)) {
+                                    targetPlayer.moveToTile(dest);
+                                } else {
+                                    break;
+                                }
+                            }
                         }
                     }
 

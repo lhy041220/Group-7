@@ -163,6 +163,11 @@ public class Player {
      */
     public void useSpecialAbility(Tile destinationTile) {
         if (role != null && remainingActions > 0) {
+            // Pilot每回合只能用一次特殊能力
+            if (role == Role.PILOT && hasUsedSpecialAbility) {
+                System.out.println("Pilot can only use special ability once per turn.");
+                return;
+            }
             role.useSpecialAbility(this, destinationTile);
             if (role == Role.PILOT) {
                 hasUsedSpecialAbility = true;
