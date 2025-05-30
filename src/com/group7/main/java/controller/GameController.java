@@ -62,16 +62,16 @@ public class GameController {
         if (player == null || destination == null) return;
         List<Tile> movable = game.getBoard().getMovableTilesForPlayer(player);
         if (!movable.contains(destination)) {
-            mainFrame.addConsoleMessage("无法移动到该格子！");
+            mainFrame.addConsoleMessage("Cannot move to that tile!");
             return;
         }
         if (player.moveToTile(destination)) {
             player.useAction();
-            mainFrame.addConsoleMessage("玩家 " + player.getPlayerId() + " 移动到了 " + destination.getType().getDisplayName());
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " moved to " + destination.getType().getDisplayName());
             mainFrame.updateBoard(game.getBoard());
             checkAfterPlayerAction(player);
         } else {
-            mainFrame.addConsoleMessage("移动失败！");
+            mainFrame.addConsoleMessage("Move failed!");
         }
     }
 
@@ -85,7 +85,7 @@ public class GameController {
         if (player.getRemainingActions() > 0 && tile.isFlooded() && !tile.isSunk()) {
             // Call player's shore up method
             if (player.shoreUp(tile)) {
-                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " shored up " + tile.getType().getDisplayName() + " 排水");
+                mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " shored up " + tile.getType().getDisplayName() + " drainage");
                 mainFrame.updateBoard(game.getBoard());
                 checkAfterPlayerAction(player);
             }
@@ -142,7 +142,7 @@ public class GameController {
         // Notify phase change
         JOptionPane.showMessageDialog(mainFrame,
                 "Player " + curr.getPlayerId() + " is now drawing treasure cards.",
-                "回合阶段提示",
+                "Turn Phase Notification",
                 JOptionPane.INFORMATION_MESSAGE);
 
         // Draw two treasure cards
@@ -233,10 +233,10 @@ public class GameController {
     private void announceGameEnd(boolean win, String reason) {
         if (win) {
             game.setGameState(GameState.WON);
-            JOptionPane.showMessageDialog(mainFrame, "游戏胜利！ " + reason);
+            JOptionPane.showMessageDialog(mainFrame, "Game won! " + reason);
         } else {
             game.setGameState(GameState.LOST);
-            JOptionPane.showMessageDialog(mainFrame, "游戏失败！ " + reason);
+            JOptionPane.showMessageDialog(mainFrame, "Game lost! " + reason);
         }
     }
 
@@ -254,14 +254,14 @@ public class GameController {
         Player player = game.getCurrentPlayer();
         Tile tile = player.getCurrentTile();
         if (player.getRemainingActions() <= 0) {
-            mainFrame.addConsoleMessage("没有足够的行动点！");
+            mainFrame.addConsoleMessage("Not enough action points!");
             return;
         }
         if (tile == null || tile.getTreasure() == null || tile.getTreasure().toString().equals("NONE")) {
-            mainFrame.addConsoleMessage("当前位置没有宝藏可获取！");
+            mainFrame.addConsoleMessage("No treasure to collect at the current location!");
             return;
         }
-        // 检查手牌
+        // Check hand cards
         int count = 0;
         for (Card card : player.getHand()) {
             if (card instanceof model.card.TreasureCard && ((model.card.TreasureCard) card).getTreasureType() == tile.getTreasure()) {
@@ -269,17 +269,17 @@ public class GameController {
             }
         }
         if (count < 4) {
-            mainFrame.addConsoleMessage("手牌不足4张对应宝藏卡，无法获取宝藏！");
+            mainFrame.addConsoleMessage("Not enough matching treasure cards (need 4)!");
             return;
         }
-        // 执行获取宝藏
+        // Collect treasure
         if (player.captureTreasure(tile.getTreasure())) {
             player.useAction();
-            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " 成功获得宝藏：" + tile.getTreasure().getDisplayName());
+            mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " successfully collected the treasure: " + tile.getTreasure().getDisplayName());
             mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
             checkAfterPlayerAction(player);
         } else {
-            mainFrame.addConsoleMessage("获取宝藏失败！");
+            mainFrame.addConsoleMessage("Failed to collect the treasure!");
         }
     }
 
@@ -338,7 +338,7 @@ public class GameController {
      */
     public void handleGiveCard(Player from, Player to, Card card) {
         if (from.getRemainingActions() <= 0) {
-            mainFrame.addConsoleMessage("没有足够的行动点！");
+            mainFrame.addConsoleMessage("Not enough action points!");
             return;
         }
         // 信使可以远程给卡，其他角色只能同格
@@ -349,7 +349,7 @@ public class GameController {
             canGive = true;
         }
         if (!canGive) {
-            mainFrame.addConsoleMessage("只能在同一格给卡，信使可远程给卡。");
+            mainFrame.addConsoleMessage("Can only give cards within the same tile, Messenger can give cards remotely.");
             return;
         }
         if (from.giveCardToPlayer(to, card)) {
@@ -358,7 +358,7 @@ public class GameController {
             mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
             checkAfterPlayerAction(from);
         } else {
-            mainFrame.addConsoleMessage("给卡失败！");
+            mainFrame.addConsoleMessage("Failed to give the card!");
         }
     }
 }
