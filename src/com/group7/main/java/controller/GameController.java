@@ -312,4 +312,33 @@ public class GameController {
         game.getTurnManager().setCurrentAction(model.TurnManager.ActionType.NAVIGATOR);
         mainFrame.addConsoleMessage("Entered navigator mode.");
     }
+
+    /**
+     * 处理玩家给卡操作，消耗行动点，刷新UI
+     */
+    public void handleGiveCard(Player from, Player to, Card card) {
+        if (from.getRemainingActions() <= 0) {
+            mainFrame.addConsoleMessage("没有足够的行动点！");
+            return;
+        }
+        // 信使可以远程给卡，其他角色只能同格
+        boolean canGive = false;
+        if (from.getRole() != null && from.getRole().getDisplayName().equals("Messenger")) {
+            canGive = true;
+        } else if (from.getCurrentTile() == to.getCurrentTile()) {
+            canGive = true;
+        }
+        if (!canGive) {
+            mainFrame.addConsoleMessage("只能在同一格给卡，信使可远程给卡。");
+            return;
+        }
+        if (from.giveCardToPlayer(to, card)) {
+            from.useAction();
+            mainFrame.addConsoleMessage("Player " + from.getPlayerId() + " gave a card to Player " + to.getPlayerId());
+            mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
+            checkAfterPlayerAction(from);
+        } else {
+            mainFrame.addConsoleMessage("给卡失败！");
+        }
+    }
 }

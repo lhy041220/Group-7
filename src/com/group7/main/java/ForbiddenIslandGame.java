@@ -104,7 +104,6 @@ public class ForbiddenIslandGame {
                 List<Player> others = new ArrayList<>();
                 for (Player p : game.getPlayers()) {
                     if (p != player) {
-                        // Messenger may ignore tile position; others must be on same tile
                         if (player.getRole() != null && player.getRole().getDisplayName().equals("Messenger")) {
                             others.add(p);
                         } else if (p.getCurrentTile() == player.getCurrentTile()) {
@@ -137,12 +136,7 @@ public class ForbiddenIslandGame {
                         giveableCards.get(0)
                 );
                 if (card == null) return;
-                if (player.giveCardToPlayer(target, card)) {
-                    mainFrame.addConsoleMessage("Player " + player.getPlayerId() + " gave a card to Player " + target.getPlayerId());
-                    mainFrame.getPlayerInfoPanel().updatePlayerInfos(game.getPlayers(), game.getCurrentPlayerIndex());
-                } else {
-                    JOptionPane.showMessageDialog(mainFrame, "Failed to give the card! Check the rules.", "Notice", JOptionPane.WARNING_MESSAGE);
-                }
+                gameController.handleGiveCard(player, target, card);
             });
             mainFrame.onCaptureTreasureButtonClick.addListener(sender -> {
                 gameController.handleCollectTreasure();
