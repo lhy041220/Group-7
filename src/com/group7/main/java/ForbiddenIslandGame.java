@@ -1,14 +1,9 @@
 import controller.GameController;
 import model.*;
 import view.coverPanel.Cover;
-import view.coverPanel.RuleImagePanel;
 import view.gamePanel.MainFrame;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -50,13 +45,13 @@ public class ForbiddenIslandGame {
                 mf.getGameBoardPanel().setMode(view.gamePanel.GameBoardPanel.Mode.MOVE);
                 // Highlight movable tiles
                 Player player = game.getCurrentPlayer();
-                java.util.List<Tile> movableTiles = new java.util.ArrayList<>();
+                List<Tile> movableTiles = new ArrayList<>();
                 for (Tile tile : game.getBoard().getAllTiles()) {
                     if (player.canMoveTo(tile) && tile != player.getCurrentTile()) {
                         movableTiles.add(tile);
                     }
                 }
-                java.util.List<int[]> positions = new java.util.ArrayList<>();
+                List<int[]> positions = new ArrayList<>();
                 for (Tile t : movableTiles) {
                     int[] pos = ((model.Board)game.getBoard()).getTilePosition(t);
                     if (pos != null) positions.add(pos);
